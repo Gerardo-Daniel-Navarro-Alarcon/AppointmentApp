@@ -4,10 +4,11 @@ class Service < ApplicationRecord
   has_many :appointments, dependent: :destroy
 
   # Validaciones
-  validates :name, :description, :category, :price, :duration, presence: true
+  validates :name, presence: true, uniqueness: true
+  validates :description, presence: true
   validates :price, numericality: { greater_than_or_equal_to: 0 }
-  validates :duration, numericality: { greater_than: 0 }
-  validates :name, uniqueness: true
+  validates :duration, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :category_id, presence: true
 
   # Scopes opcionales para filtrar servicios activos
   scope :active, -> { where(active: true) }

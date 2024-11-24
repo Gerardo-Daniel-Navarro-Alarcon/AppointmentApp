@@ -1,57 +1,51 @@
-<%= form_with(model: service) do |form| %>
+<%= form_with(model: service, local: true) do |form| %>
   <% if service.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(service.errors.count, "error") %> prohibited this service from being saved:</h2>
-
+    <div class="alert alert-danger">
+      <h2><%= pluralize(service.errors.count, "error") %> impidieron que este servicio fuera guardado:</h2>
       <ul>
-        <% service.errors.each do |error| %>
-          <li><%= error.full_message %></li>
+        <% service.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
         <% end %>
       </ul>
     </div>
   <% end %>
 
   <!-- Campo: Nombre -->
-  <div>
-    <%= form.label :name, style: "display: block" %>
-    <%= form.text_field :name %>
+  <div class="mb-3">
+    <%= form.label :name, "Nombre", class: "form-label" %>
+    <%= form.text_field :name, class: "form-control", required: true %>
   </div>
 
   <!-- Campo: Descripción -->
-  <div>
-    <%= form.label :description, style: "display: block" %>
-    <%= form.text_area :description %>
+  <div class="mb-3">
+    <%= form.label :description, "Descripción", class: "form-label" %>
+    <%= form.text_area :description, class: "form-control", required: true %>
   </div>
 
   <!-- Campo: Categoría -->
   <div class="mb-3">
     <%= form.label :category_id, "Categoría", class: "form-label" %>
-    <%= form.collection_select :category_id, Category.all, :id, :name, prompt: "Selecciona una categoría", class: "form-select" %>
-    <% if service.errors[:category_id].any? %>
-      <div class="text-danger"><%= service.errors[:category_id].first %></div>
-    <% end %>
+    <%= form.collection_select :category_id, Category.all, :id, :name, { prompt: "Selecciona una categoría" }, class: "form-select", required: true %>
   </div>
 
   <!-- Campo: Precio -->
-  <div>
-    <%= form.label :price, style: "display: block" %>
-    <%= form.text_field :price %>
+  <div class="mb-3">
+    <%= form.label :price, "Precio", class: "form-label" %>
+    <%= form.number_field :price, step: 0.01, class: "form-control", required: true %>
   </div>
 
-  <!-- Campo: Duración (nuevo campo) -->
-  <div>
-    <%= form.label :duration, "Duración (en minutos)", style: "display: block" %>
-    <%= form.number_field :duration, min: 1, step: 1 %>
+  <!-- Campo: Duración -->
+  <div class="mb-3">
+    <%= form.label :duration, "Duración (minutos)", class: "form-label" %>
+    <%= form.number_field :duration, class: "form-control", required: true %>
   </div>
 
   <!-- Campo: Activo -->
-  <div>
-    <%= form.label :active, style: "display: block" %>
-    <%= form.check_box :active %>
+  <div class="mb-3 form-check">
+    <%= form.check_box :active, class: "form-check-input" %>
+    <%= form.label :active, "Activo", class: "form-check-label" %>
   </div>
 
   <!-- Botón de Envío -->
-  <div>
-    <%= form.submit %>
-  </div>
+  <%= form.submit class: "btn btn-primary" %>
 <% end %>

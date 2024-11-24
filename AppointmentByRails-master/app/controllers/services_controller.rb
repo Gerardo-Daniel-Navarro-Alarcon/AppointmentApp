@@ -23,10 +23,12 @@ class ServicesController < ApplicationController
   # GET /services/new
   def new
     @service = Service.new
+    @categories = Category.all
   end
 
   # GET /services/1/edit
   def edit
+    @categories = Category.all
   end
 
   # POST /services or /services.json
@@ -34,9 +36,10 @@ class ServicesController < ApplicationController
     @service = Service.new(service_params)
     respond_to do |format|
       if @service.save
-        format.html { redirect_to @service, notice: 'Service was successfully created.' }
+        format.html { redirect_to @service, notice: 'Servicio creado exitosamente.' }
         format.json { render :show, status: :created, location: @service }
       else
+        @categories = Category.all
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @service.errors, status: :unprocessable_entity }
       end
@@ -79,6 +82,6 @@ class ServicesController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def service_params
-  params.require(:service).permit(:name, :description, :category, :price, :duration, :active)
-end
+    params.require(:service).permit(:name, :description, :category_id, :price, :duration, :active)
+  end
 end

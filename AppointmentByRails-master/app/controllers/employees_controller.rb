@@ -1,6 +1,6 @@
 # app/controllers/employees_controller.rb
 class EmployeesController < ApplicationController
-   skip_before_action :verify_authenticity_token, if: -> { request.format.json? }
+  skip_before_action :verify_authenticity_token, if: -> { request.format.json? }
   before_action :set_employee, only: %i[show edit update destroy]
 
   # GET /employees or /employees.json
@@ -23,6 +23,7 @@ class EmployeesController < ApplicationController
   # GET /employees/new
   def new
     @employee = Employee.new
+    @roles = Role.all
   end
 
   # GET /employees/1/edit
@@ -34,9 +35,10 @@ class EmployeesController < ApplicationController
     @employee = Employee.new(employee_params)
     respond_to do |format|
       if @employee.save
-        format.html { redirect_to @employee, notice: 'Employee was successfully created.' }
+        format.html { redirect_to @employee, notice: 'Empleado creado exitosamente.' }
         format.json { render :show, status: :created, location: @employee }
       else
+        @roles = Role.all
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @employee.errors, status: :unprocessable_entity }
       end
@@ -74,6 +76,6 @@ class EmployeesController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def employee_params
-    params.require(:employee).permit(:first_name, :last_name, :email, :password, :password_confirmation, :role_id, :phone_number)
+    params.require(:employee).permit(:first_name, :last_name, :email, :password, :password_confirmation, :role_id, :phone_number, :active)
   end
 end

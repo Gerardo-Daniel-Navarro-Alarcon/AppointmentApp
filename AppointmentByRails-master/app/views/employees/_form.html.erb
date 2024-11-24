@@ -1,55 +1,65 @@
-<%= form_with(model: employee) do |form| %>
-  <% if employee.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(employee.errors.count, "error") %> prohibited this employee from being saved:</h2>
+<!-- app/views/employees/_form.html.erb -->
 
+<%= form_with(model: employee, local: true) do |form| %>
+  <% if employee.errors.any? %>
+    <div class="alert alert-danger">
+      <h2><%= pluralize(employee.errors.count, "error") %> impidieron que este empleado fuera guardado:</h2>
       <ul>
-        <% employee.errors.each do |error| %>
-          <li><%= error.full_message %></li>
+        <% employee.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
         <% end %>
       </ul>
     </div>
   <% end %>
 
-  <div>
-    <%= form.label :first_name, style: "display: block" %>
-    <%= form.text_field :first_name %>
+  <!-- Campo: Nombre -->
+  <div class="mb-3">
+    <%= form.label :first_name, "Nombre", class: "form-label" %>
+    <%= form.text_field :first_name, class: "form-control", required: true %>
   </div>
 
-  <div>
-    <%= form.label :last_name, style: "display: block" %>
-    <%= form.text_field :last_name %>
+  <!-- Campo: Apellido -->
+  <div class="mb-3">
+    <%= form.label :last_name, "Apellido", class: "form-label" %>
+    <%= form.text_field :last_name, class: "form-control", required: true %>
   </div>
 
-  <div>
-    <%= form.label :email, style: "display: block" %>
-    <%= form.text_field :email %>
+  <!-- Campo: Email -->
+  <div class="mb-3">
+    <%= form.label :email, "Correo Electrónico", class: "form-label" %>
+    <%= form.email_field :email, class: "form-control", required: true %>
   </div>
 
-  <div>
-    <%= form.label :password_digest, style: "display: block" %>
-    <%= form.text_field :password_digest %>
+  <!-- Campo: Contraseña -->
+  <div class="mb-3">
+    <%= form.label :password, "Contraseña", class: "form-label" %>
+    <%= form.password_field :password, class: "form-control", required: true %>
   </div>
 
-  <div>
-    <%= form.label :role, style: "display: block" %>
-    <%= form.text_field :role %>
+  <!-- Campo: Confirmar Contraseña -->
+  <div class="mb-3">
+    <%= form.label :password_confirmation, "Confirmar Contraseña", class: "form-label" %>
+    <%= form.password_field :password_confirmation, class: "form-control", required: true %>
   </div>
 
+  <!-- Campo: Rol -->
   <div class="mb-3">
     <%= form.label :role_id, "Rol", class: "form-label" %>
-    <%= form.collection_select :role_id, Role.all, :id, :name, prompt: "Selecciona un rol", class: "form-select" %>
-    <% if @employee.errors[:role_id].any? %>
-      <div class="text-danger"><%= @employee.errors[:role_id].first %></div>
-    <% end %>
+    <%= form.collection_select :role_id, @roles, :id, :name, { prompt: "Selecciona un rol" }, class: "form-select", required: true %>
   </div>
 
-  <div>
-    <%= form.label :phone_number, style: "display: block" %>
-    <%= form.text_field :phone_number %>
+  <!-- Campo: Número de Teléfono -->
+  <div class="mb-3">
+    <%= form.label :phone_number, "Número de Teléfono", class: "form-label" %>
+    <%= form.telephone_field :phone_number, class: "form-control", required: true %>
   </div>
 
-  <div>
-    <%= form.submit %>
+  <!-- Campo: Activo -->
+  <div class="mb-3 form-check">
+    <%= form.check_box :active, class: "form-check-input" %>
+    <%= form.label :active, "Activo", class: "form-check-label" %>
   </div>
+
+  <!-- Botón de Envío -->
+  <%= form.submit class: "btn btn-primary" %>
 <% end %>
