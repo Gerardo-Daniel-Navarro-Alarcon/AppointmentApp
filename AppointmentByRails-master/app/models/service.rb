@@ -1,6 +1,6 @@
 # app/models/service.rb
 class Service < ApplicationRecord
-  # Relaciones
+  belongs_to :category
   has_many :appointments, dependent: :destroy
 
   # Validaciones

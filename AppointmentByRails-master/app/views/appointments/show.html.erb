@@ -69,6 +69,7 @@
       <% if @appointment.status.present? %>
         <p><strong>Estado:</strong> <%= @appointment.status.capitalize %></p>
       <% end %>
+      <p><strong>Notas:</strong> <%= @appointment.notes %></p>
 
       <!-- Productos Asociados -->
       <h3 class="mt-4">Productos Asociados</h3>

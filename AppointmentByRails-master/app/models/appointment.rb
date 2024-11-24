@@ -1,11 +1,29 @@
 # app/models/appointment.rb
 class Appointment < ApplicationRecord
-  after_initialize :set_default_status, if: :new_record?
+  belongs_to :employee
+  belongs_to :service
+  has_many :appointment_products, dependent: :destroy
+  has_many :products, through: :appointment_products
 
-  # Enum para los estados de la cita en inglés, con traducción a español solo en vistas
-  enum status: { pending: "Pendiente", confirmed: "Confirmada", completed: "Completada" }
+  # Definir los estados permitidos usando enum
+  enum status: { pendiente: 0, confirmada: 1, cancelada: 2, completada: 3 }
 
-  # Método de verificación de conflictos de horario (ahora es público)
+  # Validaciones
+  validates :status, presence: true
+  validates :employee_id, :service_id, :appointment_date, presence: true
+
+  # Validaciones personalizadas (si son necesarias)
+  validate :appointment_date_cannot_be_in_the_past
+  validate :employee_availability
+  validate :service_availability
+
+  # Callbacks para manejo de inventario
+  after_create :deduct_inventory, if: -> { confirmada? }
+  after_destroy :restore_inventory
+
+  # Métodos públicos
+
+  # Método para verificar si la cita tiene conflictos de horario
   def conflict?
     return false if service.nil? || service.duration.nil?
 
@@ -14,57 +32,36 @@ class Appointment < ApplicationRecord
     # Buscar citas conflictivas del mismo empleado en el mismo rango de tiempo
     Appointment.where(employee_id: employee_id)
                .where.not(id: id) # Excluir la cita actual
-               .where("appointment_date < ? AND ? < appointment_date + interval '1 minute' * services.duration", end_time, appointment_date)
                .joins(:service)
+               .where("appointment_date < ? AND (appointment_date + INTERVAL '1 minute' * services.duration) > ?", end_time, appointment_date)
                .exists?
   end
 
+  # Otros métodos públicos...
+
   private
 
-  # Asigna el estado predeterminado como 'pending' si no se ha especificado otro
-  def set_default_status
-    self.status ||= "pending"
+  # Métodos privados
+  # Por ejemplo, puedes tener métodos de validación personalizada
+
+  # Método de validación personalizada para verificar disponibilidad del empleado
+  def employee_availability
+    if conflict?
+      errors.add(:base, "El empleado no está disponible en el horario seleccionado.")
+    end
   end
 
-  # Validaciones de campos obligatorios y lógica de estado
-  validates :status, presence: true, inclusion: { in: statuses.keys }
-  validates :employee_id, :service_id, :appointment_date, presence: true
-  validate :appointment_date_cannot_be_in_the_past
-  validate :employee_availability
-  validate :service_availability
+  # Otros métodos privados...
 
-  # Relaciones
-  belongs_to :employee
-  belongs_to :service
-  has_many :appointment_products, dependent: :destroy
-  has_many :products, through: :appointment_products
+  # Asigna el estado predeterminado como 'pendiente' si no se ha especificado otro
+  def set_default_status
+    self.status ||= "pendiente"
+  end
 
-  # Callbacks para manejo de inventario
-  after_create :deduct_inventory, if: -> { status == 'confirmed' }
-  after_destroy :restore_inventory
-
-  # Validación personalizada para evitar fechas en el pasado
+  # Otras validaciones personalizadas...
   def appointment_date_cannot_be_in_the_past
     if appointment_date.present? && appointment_date < Time.current
       errors.add(:appointment_date, "no puede estar en el pasado")
-    end
-  end
-
-  # Verificación de disponibilidad del empleado
-  def employee_availability
-    if service.nil? || service.duration.nil?
-      errors.add(:service_id, "El servicio seleccionado no es válido o no tiene una duración especificada.")
-      return
-    end
-
-    end_time = appointment_date + service.duration.minutes
-    conflicting_appointments = Appointment.where(employee_id: employee_id)
-                                          .where.not(id: id)
-                                          .where("appointment_date < ? AND ? < appointment_date + interval '1 minute' * services.duration", end_time, appointment_date)
-                                          .joins(:service)
-
-    if conflicting_appointments.exists?
-      errors.add(:appointment_date, "El empleado no está disponible en el horario seleccionado.")
     end
   end
 

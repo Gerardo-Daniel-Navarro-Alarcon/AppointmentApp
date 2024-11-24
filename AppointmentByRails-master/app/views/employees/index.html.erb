@@ -60,10 +60,9 @@
               <h5 class="card-title text-primary fw-bold"><i class="bi bi-person-fill"></i> <%= employee.full_name %></h5>
               <p><strong><i class="bi bi-envelope-fill"></i> Correo:</strong> <%= employee.email %></p>
               <p><strong><i class="bi bi-phone-fill"></i> Teléfono:</strong> <%= employee.phone_number %></p>
-              <p><strong><i class="bi bi-briefcase-fill"></i> Rol:</strong> <%= employee.role.capitalize %></p>
-
+              <p><strong><i class="bi bi-briefcase-fill"></i> Rol:</strong> <%= employee.role.name.capitalize %></p>
               <!-- Condición adicional para roles administrativos -->
-              <% if employee.role == "admin" %>
+              <% if employee.role.name == "admin" %>
                 <div class="alert alert-info p-2 my-2">
                   <small><i class="bi bi-shield-lock-fill"></i> Administrador</small>
                 </div>

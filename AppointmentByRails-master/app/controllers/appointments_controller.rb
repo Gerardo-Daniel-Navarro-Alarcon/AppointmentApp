@@ -34,6 +34,12 @@ class AppointmentsController < ApplicationController
     @appointment = Appointment.new(appointment_params)
     respond_to do |format|
       if @appointment.save
+        # Asocia productos si se seleccionaron
+        if params[:appointment][:product_ids].present?
+          params[:appointment][:product_ids].each do |product_id|
+            @appointment.appointment_products.create!(product_id: product_id, quantity: 1) # Ajusta la cantidad según sea necesario
+          end
+        end
         format.html { redirect_to @appointment, notice: 'La cita fue creada exitosamente.' }
         format.json { render :show, status: :created, location: @appointment }
       else
@@ -50,6 +56,13 @@ class AppointmentsController < ApplicationController
   def update
     respond_to do |format|
       if @appointment.update(appointment_params)
+        # Actualiza asociaciones de productos
+        @appointment.appointment_products.destroy_all
+        if params[:appointment][:product_ids].present?
+          params[:appointment][:product_ids].each do |product_id|
+            @appointment.appointment_products.create!(product_id: product_id, quantity: 1) # Ajusta la cantidad según sea necesario
+          end
+        end
         format.html { redirect_to @appointment, notice: 'La cita fue actualizada exitosamente.' }
         format.json { render :show, status: :ok, location: @appointment }
       else
@@ -85,7 +98,18 @@ class AppointmentsController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def appointment_params
-    params.require(:appointment).permit(:employee_id, :service_id, :appointment_date, :status, :notes)
+    params.require(:appointment).permit(:employee_id, :service_id, :appointment_date, :status, :notes, product_ids: [])
   end
   
+end
+
+# app/controllers/products_controller.rb
+
+def new
+  @product = Product.new
+  @categories = Category.all
+end
+
+def edit
+  @categories = Category.all
 end

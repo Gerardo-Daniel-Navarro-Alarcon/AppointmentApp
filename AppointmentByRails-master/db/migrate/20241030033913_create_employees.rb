@@ -7,6 +7,7 @@ class CreateEmployees < ActiveRecord::Migration[7.0]
       t.string :password_digest
       t.string :role
       t.string :phone_number
+      t.references :role, null: false, foreign_key: true
       t.timestamps  # Esta línea ya crea las columnas created_at y updated_at automáticamente
     end
   end

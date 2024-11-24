@@ -1,89 +1,193 @@
 # db/seeds.rb
 
 # Elimina todos los registros anteriores para evitar duplicados
-Employee.destroy_all
-Service.destroy_all
-Product.destroy_all
-Appointment.destroy_all
 AppointmentProduct.destroy_all
+Appointment.destroy_all
 EmployeeService.destroy_all
+Product.destroy_all
+Service.destroy_all
+Category.destroy_all
+Employee.destroy_all
+Role.destroy_all
 
-# Crea empleados
-employee1 = Employee.create!(
-  first_name: "Gerardo",
-  last_name: "Navarro",
-  email: "gerardo@example.com",
-  password_digest: "123456",
-  role: "admin",
-  phone_number: "1234567890"
+# 1. Crear Roles
+admin_role = Role.create!(name: "admin")
+shipper_role = Role.create!(name: "shipper")
+warehouse_manager_role = Role.create!(name: "warehouse_manager")
+logistics_coordinator_role = Role.create!(name: "logistics_coordinator")
+
+# 2. Crear Empleados
+Employee.create!(
+  first_name: "Ana",
+  last_name: "García",
+  email: "ana.garcia@yesera.com",
+  password: "password123",
+  role: admin_role, # O usa role_id: admin_role.id
+  phone_number: "5551234567"
 )
 
-employee2 = Employee.create!(
+Employee.create!(
+  first_name: "Luis",
+  last_name: "Martínez",
+  email: "luis.martinez@yesera.com",
+  password: "password123",
+  role: shipper_role,
+  phone_number: "5552345678"
+)
+
+Employee.create!(
+  first_name: "María",
+  last_name: "Rodríguez",
+  email: "maria.rodriguez@yesera.com",
+  password: "password123",
+  role: warehouse_manager_role,
+  phone_number: "5553456789"
+)
+
+Employee.create!(
   first_name: "Carlos",
-  last_name: "Pérez",
-  email: "carlos@example.com",
-  password_digest: "abcdef",
-  role: "barber",
-  phone_number: "9876543210"
+  last_name: "López",
+  email: "carlos.lopez@yesera.com",
+  password: "password123",
+  role: logistics_coordinator_role,
+  phone_number: "5554567890"
 )
 
-# Crea servicios
-service1 = Service.create!(
-  name: "Corte de Cabello",
-  description: "Corte clásico para caballero",
-  category: "Barbería",
-  price: 200.00,
+# 3. Crear Categorías de Productos
+category_residenciales = Category.create!(name: "Ladrillos Residenciales")
+category_comerciales = Category.create!(name: "Ladrillos Comerciales")
+category_industriales = Category.create!(name: "Ladrillos Industriales")
+category_constructivos = Category.create!(name: "Materiales de Construcción")
+category_accesorios = Category.create!(name: "Accesorios de Embarque")
+logistics_category = Category.find_or_create_by!(name: "Logística")
+
+# 4. Crear Productos
+Product.create!(
+  name: "Ladrillo Rojo estándar",
+  description: "Ladrillo rojo de alta calidad para construcciones residenciales.",
+  category: category_residenciales,
+  price: 0.50,
+  stock: 10000,
   active: true
 )
 
-service2 = Service.create!(
-  name: "Afeitado Completo",
-  description: "Afeitado y cuidado facial",
-  category: "Barbería",
+Product.create!(
+  name: "Ladrillo Comercial reforzado",
+  description: "Ladrillo comercial con refuerzo para mayor durabilidad.",
+  category: category_comerciales,
+  price: 0.75,
+  stock: 8000,
+  active: true
+)
+
+Product.create!(
+  name: "Ladrillo Industrial pesado",
+  description: "Ladrillo industrial diseñado para estructuras de gran tamaño.",
+  category: category_industriales,
+  price: 1.00,
+  stock: 5000,
+  active: true
+)
+
+Product.create!(
+  name: "Cemento Portland",
+  description: "Cemento de alta resistencia para diversas aplicaciones constructivas.",
+  category: category_constructivos,
+  price: 7.50,
+  stock: 2000,
+  active: true
+)
+
+Product.create!(
+  name: "Paleta de Pintor",
+  description: "Herramienta fundamental para el acabado de paredes.",
+  category: category_accesorios,
+  price: 3.00,
+  stock: 1500,
+  active: true
+)
+
+Product.create!(
+  name: "Cinta Adhesiva de Envío",
+  description: "Cinta resistente para asegurar paquetes durante el transporte.",
+  category: category_accesorios,
+  price: 1.20,
+  stock: 3000,
+  active: true
+)
+
+# 5. Crear Servicios de Envío
+Service.create!(
+  name: "Envío Nacional",
+  description: "Servicio de envío a nivel nacional con seguimiento en tiempo real.",
+  category: logistics_category,
+  price: 50.00,
+  duration: 2,
+  active: true
+)
+
+Service.create!(
+  name: "Envío Internacional",
+  description: "Servicio de envío internacional con documentación personalizada.",
+  category: logistics_category,
   price: 150.00,
+  duration: 5, # Añade el atributo duration si es necesario
   active: true
 )
 
-# Relación entre empleados y servicios
-EmployeeService.create!(employee: employee2, service: service1)
-EmployeeService.create!(employee: employee2, service: service2)
-
-# Crea productos
-product1 = Product.create!(
-  name: "Cera para Cabello",
-  description: "Cera moldeadora de alta fijación",
-  price: 120.00,
-  stock: 50,
+Service.create!(
+  name: "Recogida en Almacén",
+  description: "Servicio de recogida de productos directamente desde el almacén.",
+  category: logistics_category,
+  price: 30.00,
+  duration: 1, # Añade el atributo duration si es necesario
   active: true
 )
 
-product2 = Product.create!(
-  name: "Loción para Afeitar",
-  description: "Loción refrescante para después del afeitado",
-  price: 80.00,
-  stock: 30,
-  active: true
-)
+# 6. Asociar Empleados con Servicios
+EmployeeService.create!(employee: Employee.find_by(email: "luis.martinez@yesera.com"), service: Service.find_by(name: "Envío Nacional"))
+EmployeeService.create!(employee: Employee.find_by(email: "carlos.lopez@yesera.com"), service: Service.find_by(name: "Envío Internacional"))
+EmployeeService.create!(employee: Employee.find_by(email: "ana.garcia@yesera.com"), service: Service.find_by(name: "Recogida en Almacén"))
 
-# Crea citas
+# 7. Crear Citas de Embarque (Appointments)
 appointment1 = Appointment.create!(
-  employee: employee2,
-  service: service1,
+  employee: Employee.find_by(email: "luis.martinez@yesera.com"),
+  service: Service.find_by(name: "Envío Nacional"),
   appointment_date: DateTime.now + 1.day,
   status: "pendiente",
-  notes: "Cliente nuevo, quiere un corte clásico"
+  notes: "Envío de 5000 ladrillos rojos estándar a Ciudad de México."
 )
 
 appointment2 = Appointment.create!(
-  employee: employee2,
-  service: service2,
+  employee: Employee.find_by(email: "carlos.lopez@yesera.com"),
+  service: Service.find_by(name: "Envío Internacional"),
   appointment_date: DateTime.now + 2.days,
   status: "confirmada",
-  notes: "Afeitado completo con cuidado facial"
+  notes: "Envío de 2000 ladrillos industriales a USA."
 )
 
-# Relación entre citas y productos
-AppointmentProduct.create!(appointment: appointment1, product: product1, quantity: 2)
-AppointmentProduct.create!(appointment: appointment2, product: product2, quantity: 1)
+appointment3 = Appointment.create!(
+  employee: Employee.find_by(email: "ana.garcia@yesera.com"),
+  service: Service.find_by(name: "Recogida en Almacén"),
+  appointment_date: DateTime.now + 3.days,
+  status: "completada",
+  notes: "Recogida de materiales de construcción para proyecto XYZ."
+)
 
-puts "Datos de ejemplo insertados correctamente."
+# 8. Asociar Productos con Citas de Embarque
+AppointmentProduct.create!(appointment: appointment1, product: Product.find_by(name: "Ladrillo Rojo estándar"), quantity: 5000)
+AppointmentProduct.create!(appointment: appointment2, product: Product.find_by(name: "Ladrillo Industrial pesado"), quantity: 2000)
+AppointmentProduct.create!(appointment: appointment3, product: Product.find_by(name: "Cemento Portland"), quantity: 300)
+AppointmentProduct.create!(appointment: appointment3, product: Product.find_by(name: "Paleta de Pintor"), quantity: 50)
+
+# 9. Crear Logs de Inventario (Opcional)
+# Esto asume que existe un modelo InventoryLog con los campos apropiados
+# InventoryLog.create!(
+#   product: Product.find_by(name: "Ladrillo Rojo estándar"),
+#   change: -5000,
+#   reason: "Envío Nacional",
+#   appointment: appointment1
+# )
+
+# 10. Mensaje de Confirmación
+puts "Datos de ejemplo insertados correctamente para el área de embarques de una yesera."

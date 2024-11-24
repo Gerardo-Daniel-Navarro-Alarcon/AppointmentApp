@@ -1,42 +1,51 @@
-<%= form_with(model: product) do |form| %>
+<%= form_with(model: product, local: true) do |form| %>
   <% if product.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(product.errors.count, "error") %> prohibited this product from being saved:</h2>
-
+    <div class="alert alert-danger">
+      <h2><%= pluralize(product.errors.count, "error") %> impidieron que este producto fuera guardado:</h2>
       <ul>
-        <% product.errors.each do |error| %>
-          <li><%= error.full_message %></li>
+        <% product.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
         <% end %>
       </ul>
     </div>
   <% end %>
 
-  <div>
-    <%= form.label :name, style: "display: block" %>
-    <%= form.text_field :name %>
+  <!-- Campo: Nombre -->
+  <div class="mb-3">
+    <%= form.label :name, "Nombre", class: "form-label" %>
+    <%= form.text_field :name, class: "form-control", required: true %>
   </div>
 
-  <div>
-    <%= form.label :description, style: "display: block" %>
-    <%= form.text_area :description %>
+  <!-- Campo: Descripción -->
+  <div class="mb-3">
+    <%= form.label :description, "Descripción", class: "form-label" %>
+    <%= form.text_area :description, class: "form-control", required: true %>
   </div>
 
-  <div>
-    <%= form.label :price, style: "display: block" %>
-    <%= form.text_field :price %>
+  <!-- Campo: Precio -->
+  <div class="mb-3">
+    <%= form.label :price, "Precio", class: "form-label" %>
+    <%= form.number_field :price, step: 0.01, class: "form-control", required: true %>
   </div>
 
-  <div>
-    <%= form.label :stock, style: "display: block" %>
-    <%= form.number_field :stock %>
+  <!-- Campo: Stock -->
+  <div class="mb-3">
+    <%= form.label :stock, "Stock", class: "form-label" %>
+    <%= form.number_field :stock, class: "form-control", required: true %>
   </div>
 
-  <div>
-    <%= form.label :active, style: "display: block" %>
-    <%= form.check_box :active %>
+  <!-- Campo: Categoría -->
+  <div class="mb-3">
+    <%= form.label :category_id, "Categoría", class: "form-label" %>
+    <%= form.collection_select :category_id, categories, :id, :name, { prompt: "Selecciona una categoría" }, class: "form-select", required: true %>
   </div>
 
-  <div>
-    <%= form.submit %>
+  <!-- Campo: Activo -->
+  <div class="mb-3 form-check">
+    <%= form.check_box :active, class: "form-check-input" %>
+    <%= form.label :active, "Activo", class: "form-check-label" %>
   </div>
+
+  <!-- Botón de Envío -->
+  <%= form.submit class: "btn btn-primary" %>
 <% end %>

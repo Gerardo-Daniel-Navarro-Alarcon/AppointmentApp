@@ -36,6 +36,14 @@
     <%= form.text_field :role %>
   </div>
 
+  <div class="mb-3">
+    <%= form.label :role_id, "Rol", class: "form-label" %>
+    <%= form.collection_select :role_id, Role.all, :id, :name, prompt: "Selecciona un rol", class: "form-select" %>
+    <% if @employee.errors[:role_id].any? %>
+      <div class="text-danger"><%= @employee.errors[:role_id].first %></div>
+    <% end %>
+  </div>
+
   <div>
     <%= form.label :phone_number, style: "display: block" %>
     <%= form.text_field :phone_number %>

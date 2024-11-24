@@ -24,9 +24,12 @@
   </div>
 
   <!-- Campo: Categoría -->
-  <div>
-    <%= form.label :category, style: "display: block" %>
-    <%= form.text_field :category %>
+  <div class="mb-3">
+    <%= form.label :category_id, "Categoría", class: "form-label" %>
+    <%= form.collection_select :category_id, Category.all, :id, :name, prompt: "Selecciona una categoría", class: "form-select" %>
+    <% if service.errors[:category_id].any? %>
+      <div class="text-danger"><%= service.errors[:category_id].first %></div>
+    <% end %>
   </div>
 
   <!-- Campo: Precio -->

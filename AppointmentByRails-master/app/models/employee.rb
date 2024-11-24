@@ -1,8 +1,10 @@
 # app/models/employee.rb
 class Employee < ApplicationRecord
+  belongs_to :role
   has_secure_password
 
   has_many :employee_services, dependent: :destroy
+  has_many :services, through: :employee_services
 
   # Validaciones
   validates :first_name, :last_name, :email, :role, presence: true
@@ -18,7 +20,7 @@ class Employee < ApplicationRecord
     "#{first_name} #{last_name}"
   end
 
-  # Scope para obtener los tokens de los administradores (eliminado campo de expo_push_token)
+  # Scope para obtener los tokens de los administradores
   scope :admin_tokens, -> { where(role: "admin").where.not(authentication_token: nil).pluck(:authentication_token) }
 
   private
