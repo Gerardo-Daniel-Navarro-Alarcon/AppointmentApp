@@ -1,15 +1,15 @@
-<%= form_with(model: @appointment, local: true) do |form| %>
+<%= form_with(model: appointment, local: true) do |form| %>
   <!-- Mensaje informativo sobre la disponibilidad -->
   <div class="alert alert-info">
     <strong>Nota:</strong> La disponibilidad del empleado y del servicio se verifica automáticamente al guardar la cita.
   </div>
 
   <!-- Mensajes de Error Globales -->
-  <% if @appointment.errors.any? %>
+  <% if appointment.errors.any? %>
     <div class="alert alert-danger">
-      <h2><%= pluralize(@appointment.errors.count, "error") %> impide que esta cita sea guardada:</h2>
+      <h2><%= pluralize(appointment.errors.count, "error") %> impide que esta cita sea guardada:</h2>
       <ul>
-        <% @appointment.errors.full_messages.each do |msg| %>
+        <% appointment.errors.full_messages.each do |msg| %>
           <li><%= msg %></li>
         <% end %>
       </ul>
@@ -19,34 +19,37 @@
   <!-- Campo: Empleado -->
   <div class="mb-3">
     <%= form.label :employee_id, "Empleado", class: "form-label" %>
-    <%= form.collection_select :employee_id, Employee.all, :id, :full_name, prompt: "Seleccione un empleado", class: "form-select" %>
-    <% if @appointment.errors[:employee_id].any? %>
-      <div class="text-danger"><%= @appointment.errors[:employee_id].first %></div>
+    <%= form.collection_select :employee_id, employees, :id, :full_name, { prompt: "Seleccione un empleado" }, class: "form-select", required: true %>
+    <% if appointment.errors[:employee_id].any? %>
+      <div class="text-danger"><%= appointment.errors[:employee_id].first %></div>
     <% end %>
   </div>
 
   <!-- Campo: Servicio -->
   <div class="mb-3">
     <%= form.label :service_id, "Servicio", class: "form-label" %>
-    <%= form.collection_select :service_id, Service.active, :id, :name, prompt: "Seleccione un servicio", class: "form-select" %>
-    <% if @appointment.errors[:service_id].any? %>
-      <div class="text-danger"><%= @appointment.errors[:service_id].first %></div>
+    <%= form.collection_select :service_id, services, :id, :name, { prompt: "Seleccione un servicio" }, class: "form-select", required: true %>
+    <% if appointment.errors[:service_id].any? %>
+      <div class="text-danger"><%= appointment.errors[:service_id].first %></div>
     <% end %>
   </div>
 
   <!-- Campo: Fecha y Hora de la Cita -->
   <div class="mb-3">
     <%= form.label :appointment_date, "Fecha y Hora de la Cita", class: "form-label" %>
-    <%= form.datetime_field :appointment_date, class: "form-control" %>
-    <% if @appointment.errors[:appointment_date].any? %>
-      <div class="text-danger"><%= @appointment.errors[:appointment_date].first %></div>
+    <%= form.datetime_field :appointment_date, class: "form-control", required: true %>
+    <% if appointment.errors[:appointment_date].any? %>
+      <div class="text-danger"><%= appointment.errors[:appointment_date].first %></div>
     <% end %>
   </div>
 
   <!-- Campo: Estado de la Cita -->
   <div class="mb-3">
     <%= form.label :status, "Estado", class: "form-label" %>
-    <%= form.select :status, options_for_select([["Pendiente", "pending"], ["Confirmada", "confirmed"], ["Cancelada", "canceled"]], @appointment.status), {}, class: "form-select" %>
+    <%= form.select :status, [["Pendiente", "pending"], ["Confirmada", "confirmed"], ["Cancelada", "canceled"]], {}, class: "form-select", required: true %>
+    <% if appointment.errors[:status].any? %>
+      <div class="text-danger"><%= appointment.errors[:status].first %></div>
+    <% end %>
   </div>
 
   <!-- Campo: Notas -->
@@ -58,13 +61,13 @@
   <!-- Campo para asociar productos -->
   <div class="mb-3">
     <%= form.label :product_ids, "Productos", class: "form-label" %>
-    <%= form.collection_select :product_ids, Product.active, :id, :name, { prompt: "Selecciona productos" }, { multiple: true, class: "form-select" } %>
-    <% if @appointment.errors[:product_ids].any? %>
-      <div class="text-danger"><%= @appointment.errors[:product_ids].first %></div>
+    <%= form.collection_select :product_ids, products, :id, :name, { prompt: "Selecciona productos" }, { multiple: true, class: "form-select" } %>
+    <% if appointment.errors[:product_ids].any? %>
+      <div class="text-danger"><%= appointment.errors[:product_ids].first %></div>
     <% end %>
   </div>
 
-  <!-- Botones de acción -->
+  <!-- Botón de Envío -->
   <div class="mt-4">
     <%= form.submit "Guardar Cita", class: "btn btn-primary" %>
   </div>

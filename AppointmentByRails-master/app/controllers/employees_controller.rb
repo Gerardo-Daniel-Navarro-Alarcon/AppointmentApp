@@ -26,35 +26,31 @@ class EmployeesController < ApplicationController
     @roles = Role.all
   end
 
-  # GET /employees/1/edit
+  # GET /employees/:id/edit
   def edit
+    @employee = Employee.find(params[:id])
+    @roles = Role.all
   end
 
-  # POST /employees or /employees.json
+  # POST /employees
   def create
     @employee = Employee.new(employee_params)
-    respond_to do |format|
-      if @employee.save
-        format.html { redirect_to @employee, notice: 'Empleado creado exitosamente.' }
-        format.json { render :show, status: :created, location: @employee }
-      else
-        @roles = Role.all
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @employee.errors, status: :unprocessable_entity }
-      end
+    if @employee.save
+      redirect_to @employee, notice: 'Empleado creado exitosamente.'
+    else
+      @roles = Role.all
+      render :new, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /employees/1 or /employees/1.json
+  # PATCH/PUT /employees/:id
   def update
-    respond_to do |format|
-      if @employee.update(employee_params)
-        format.html { redirect_to @employee, notice: 'Employee was successfully updated.' }
-        format.json { render :show, status: :ok, location: @employee }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @employee.errors, status: :unprocessable_entity }
-      end
+    @employee = Employee.find(params[:id])
+    if @employee.update(employee_params)
+      redirect_to @employee, notice: 'Empleado actualizado exitosamente.'
+    else
+      @roles = Role.all
+      render :edit, status: :unprocessable_entity
     end
   end
 
@@ -76,6 +72,9 @@ class EmployeesController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def employee_params
-    params.require(:employee).permit(:first_name, :last_name, :email, :password, :password_confirmation, :role_id, :phone_number, :active)
+    params.require(:employee).permit(
+      :first_name, :last_name, :email, :password, :password_confirmation,
+      :role_id, :phone_number, :active
+    )
   end
 end

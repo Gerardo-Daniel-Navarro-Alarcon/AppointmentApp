@@ -42,40 +42,7 @@
     <h1 class="text-primary fw-bold mb-4">Nueva Cita</h1>
 
     <div class="card shadow-sm p-4">
-      <%= form_with(model: @appointment, local: true) do |form| %>
-        <!-- Campo para el empleado -->
-        <div class="mb-3">
-          <%= form.label :employee_id, "Empleado", class: "form-label" %>
-          <%= form.collection_select :employee_id, Employee.all, :id, :full_name, { prompt: "Selecciona un empleado" }, { class: "form-select", required: true } %>
-        </div>
-
-        <!-- Campo para el servicio -->
-        <div class="mb-3">
-          <%= form.label :service_id, "Servicio", class: "form-label" %>
-          <%= form.collection_select :service_id, Service.all, :id, :name, { prompt: "Selecciona un servicio" }, { class: "form-select", required: true } %>
-        </div>
-
-        <!-- Campo para la fecha y hora de la cita -->
-        <div class="mb-3">
-          <%= form.label :appointment_date, "Fecha y Hora", class: "form-label" %>
-          <%= form.datetime_local_field :appointment_date, class: "form-control", required: true %>
-        </div>
-
-        <!-- Campo para la descripción -->
-        <div class="mb-3">
-          <%= form.label :description, "Descripción", class: "form-label" %>
-          <%= form.text_area :description, class: "form-control", rows: 3, placeholder: "Añade detalles relevantes para la cita" %>
-        </div>
-
-        <!-- Campo para el estado de la cita -->
-        <div class="mb-3">
-          <%= form.label :status, "Estado", class: "form-label" %>
-          <%= form.select :status, Appointment.statuses.map { |key, value| [value, key] }, { prompt: "Selecciona el estado" }, { class: "form-select", required: true } %>
-        </div>
-
-        <!-- Botón para enviar el formulario -->
-        <%= form.submit "Guardar Cita", class: "btn btn-primary" %>
-      <% end %>
+      <%= render 'form', appointment: @appointment, employees: @employees, services: @services, products: @products %>
     </div>
 
     <div class="mt-4">

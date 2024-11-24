@@ -3,7 +3,7 @@
 <%= form_with(model: employee, local: true) do |form| %>
   <% if employee.errors.any? %>
     <div class="alert alert-danger">
-      <h2><%= pluralize(employee.errors.count, "error") %> impidieron que este empleado fuera guardado:</h2>
+      <h2><%= pluralize(employee.errors.count, "error") %> impidieron que este empleado fuese guardado:</h2>
       <ul>
         <% employee.errors.full_messages.each do |msg| %>
           <li><%= msg %></li>
@@ -24,7 +24,7 @@
     <%= form.text_field :last_name, class: "form-control", required: true %>
   </div>
 
-  <!-- Campo: Email -->
+  <!-- Campo: Correo Electrónico -->
   <div class="mb-3">
     <%= form.label :email, "Correo Electrónico", class: "form-label" %>
     <%= form.email_field :email, class: "form-control", required: true %>
@@ -33,19 +33,19 @@
   <!-- Campo: Contraseña -->
   <div class="mb-3">
     <%= form.label :password, "Contraseña", class: "form-label" %>
-    <%= form.password_field :password, class: "form-control", required: true %>
+    <%= form.password_field :password, class: "form-control", required: employee.new_record? %>
   </div>
 
   <!-- Campo: Confirmar Contraseña -->
   <div class="mb-3">
     <%= form.label :password_confirmation, "Confirmar Contraseña", class: "form-label" %>
-    <%= form.password_field :password_confirmation, class: "form-control", required: true %>
+    <%= form.password_field :password_confirmation, class: "form-control", required: employee.new_record? %>
   </div>
 
   <!-- Campo: Rol -->
   <div class="mb-3">
     <%= form.label :role_id, "Rol", class: "form-label" %>
-    <%= form.collection_select :role_id, @roles, :id, :name, { prompt: "Selecciona un rol" }, class: "form-select", required: true %>
+    <%= form.collection_select :role_id, roles, :id, :name, { prompt: "Selecciona un rol" }, class: "form-select", required: true %>
   </div>
 
   <!-- Campo: Número de Teléfono -->

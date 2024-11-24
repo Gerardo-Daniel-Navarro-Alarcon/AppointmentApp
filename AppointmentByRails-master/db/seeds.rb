@@ -22,7 +22,7 @@ Employee.create!(
   last_name: "García",
   email: "ana.garcia@yesera.com",
   password: "password123",
-  role: admin_role, # O usa role_id: admin_role.id
+  role_id: admin_role.id,
   phone_number: "5551234567"
 )
 
@@ -31,8 +31,8 @@ Employee.create!(
   last_name: "Martínez",
   email: "luis.martinez@yesera.com",
   password: "password123",
-  role: shipper_role,
-  phone_number: "5552345678"
+  role_id: shipper_role.id,
+  phone_number: "5559876543"
 )
 
 Employee.create!(

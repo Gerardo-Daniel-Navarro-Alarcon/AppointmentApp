@@ -23,10 +23,17 @@ class AppointmentsController < ApplicationController
   # GET /appointments/new
   def new
     @appointment = Appointment.new
+    @employees = Employee.all
+    @services = Service.where(active: true)
+    @products = Product.where(active: true)
   end
 
-  # GET /appointments/1/edit
   def edit
+    @appointment = Appointment.find(params[:id])
+    @employees = Employee.all
+    @services = Service.where(active: true)
+    @products = Product.where(active: true)
+    @selected_products = @appointment.products.pluck(:id)
   end
 
   # POST /appointments or /appointments.json

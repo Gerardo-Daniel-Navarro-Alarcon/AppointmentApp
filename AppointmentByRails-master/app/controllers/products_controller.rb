@@ -38,6 +38,7 @@ class ProductsController < ApplicationController
 
   # GET /products/1/edit
   def edit
+    @categories = Category.all
   end
 
   # POST /products or /products.json
@@ -59,9 +60,10 @@ class ProductsController < ApplicationController
   def update
     respond_to do |format|
       if @product.update(product_params)
-        format.html { redirect_to @product, notice: 'Product was successfully updated.' }
+        format.html { redirect_to @product, notice: 'Producto actualizado exitosamente.' }
         format.json { render :show, status: :ok, location: @product }
       else
+        @categories = Category.all
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @product.errors, status: :unprocessable_entity }
       end
@@ -82,11 +84,6 @@ class ProductsController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_product
     @product = Product.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
-    respond_to do |format|
-      format.html { redirect_to products_url, alert: 'Product not found.' }
-      format.json { render json: { error: 'Product not found' }, status: :not_found }
-    end
   end
 
   # Only allow a list of trusted parameters through.

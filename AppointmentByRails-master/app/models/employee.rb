@@ -11,12 +11,16 @@ class Employee < ApplicationRecord
   # Validaciones
   validates :first_name, presence: true
   validates :last_name, presence: true
-  validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
-  validates :password, presence: true, length: { minimum: 6 }, on: :create
-  validates :phone_number, presence: true, numericality: { only_integer: true }, length: { is: 10 }
+  validates :email, presence: true, uniqueness: true
+  validates :password, presence: true, length: { minimum: 6 }, if: :password_required?
+  validates :phone_number, presence: true
   validates :role_id, presence: true
-  validates :authentication_token, uniqueness: true, allow_nil: true
   validates :active, inclusion: { in: [true, false] }
+
+  # Método para manejar la validación condicional de contraseña
+  def password_required?
+    new_record? || !password.nil?
+  end
 
   # Callbacks
   before_create :generate_authentication_token
@@ -28,6 +32,11 @@ class Employee < ApplicationRecord
 
   # Scope para obtener los tokens de los administradores
   scope :admin_tokens, -> { where(role: "admin").where.not(authentication_token: nil).pluck(:authentication_token) }
+
+  # Método para manejar la validación condicional de contraseña
+  def password_required?
+    new_record? || !password.nil?
+  end
 
   private
 
