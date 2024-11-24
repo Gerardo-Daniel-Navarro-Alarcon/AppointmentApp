@@ -1,0 +1,61 @@
+<!-- app/views/sessions/new.html.erb -->
+<div class="container mt-5 d-flex justify-content-center">
+  <div class="card shadow-lg p-4" style="max-width: 400px; width: 100%;">
+    <div class="card-body">
+      <h2 class="text-center mb-4 text-primary">
+        <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+      </h2>
+
+      <!-- Mensaje de error si las credenciales son inválidas -->
+      <% if flash[:alert] %>
+        <div class="alert alert-danger text-center">
+          <%= flash[:alert] %>
+        </div>
+      <% end %>
+
+      <%= form_with url: sessions_path, local: true do |form| %>
+        <!-- Campo de correo electrónico -->
+        <div class="mb-3">
+          <%= form.label :email, "Correo Electrónico", class: "form-label fw-bold" %>
+          <%= form.email_field :email, class: "form-control", required: true, placeholder: "Ingresa tu correo" %>
+        </div>
+
+        <!-- Campo de contraseña con opción de mostrar/ocultar -->
+        <div class="mb-3 position-relative">
+          <%= form.label :password, "Contraseña", class: "form-label fw-bold" %>
+          <%= form.password_field :password, class: "form-control", required: true, placeholder: "Ingresa tu contraseña" %>
+          <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y me-2 p-0" onclick="togglePasswordVisibility()">
+            <i class="bi bi-eye-slash" id="toggleIcon"></i>
+          </button>
+        </div>
+
+        <!-- Botón de inicio de sesión -->
+        <div class="d-grid gap-2">
+          <%= form.submit "Iniciar Sesión", class: "btn btn-primary fw-bold" %>
+        </div>
+      <% end %>
+
+      <!-- Opción de recuperación de contraseña -->
+      <div class="text-center mt-3">
+        <a href="#" class="text-secondary">¿Olvidaste tu contraseña?</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Script para mostrar/ocultar contraseña -->
+<script>
+  function togglePasswordVisibility() {
+    const passwordField = document.querySelector("input[type='password']");
+    const toggleIcon = document.getElementById("toggleIcon");
+    if (passwordField.type === "password") {
+      passwordField.type = "text";
+      toggleIcon.classList.remove("bi-eye-slash");
+      toggleIcon.classList.add("bi-eye");
+    } else {
+      passwordField.type = "password";
+      toggleIcon.classList.remove("bi-eye");
+      toggleIcon.classList.add("bi-eye-slash");
+    }
+  }
+</script>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Productos | AppointmentByRails</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+  <!-- Encabezado -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="#">AppointmentByRails</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <%= link_to "Inicio", inicio_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Empleados", employees_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Servicios", services_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Productos", products_path, class: "nav-link active fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Citas", appointments_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Notificación -->
+  <% if notice %>
+    <div class="alert alert-success text-center mt-3">
+      <%= notice %>
+    </div>
+  <% end %>
+
+  <!-- Sección de Productos -->
+  <section class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="text-primary fw-bold"><i class="bi bi-box-seam"></i> Productos</h1>
+      <div>
+        <!-- Enlace a productos con inventario bajo -->
+        <%= link_to "Productos con Inventario Bajo", low_stock_products_path, class: "btn btn-warning me-2" %>
+        <%= link_to "Nuevo Producto", new_product_path, class: "btn btn-primary" %>
+      </div>
+    </div>
+
+    <div id="products" class="row row-cols-1 row-cols-md-2 g-4">
+      <% @products.each do |product| %>
+        <div class="col">
+          <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+              <h5 class="card-title text-primary fw-bold"><i class="bi bi-tag-fill"></i> <%= product.name %></h5>
+              <p><strong><i class="bi bi-currency-dollar"></i> Precio:</strong> <%= number_to_currency(product.price, unit: "MXN$") %></p>
+              <p><strong><i class="bi bi-boxes"></i> Stock:</strong> <%= product.stock %> unidades</p>
+              <p><strong><i class="bi bi-info-circle-fill"></i> Descripción:</strong> <%= product.description %></p>
+
+              <!-- Indicador de bajo stock -->
+              <% if product.stock < 5 %>
+                <div class="alert alert-danger p-2 my-2">
+                  <small><i class="bi bi-exclamation-triangle-fill"></i> Bajo en inventario</small>
+                </div>
+              <% end %>
+
+              <div class="d-flex justify-content-between align-items-center mt-3">
+                <%= link_to "Ver detalles", product, class: "btn btn-outline-primary" %>
+                <%= link_to "Editar", edit_product_path(product), class: "btn btn-outline-secondary" %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <!-- Pie de Página -->
+  <footer class="bg-dark text-white text-center py-3 mt-5">
+    <div class="container">
+      <p>&copy; 2024 AppointmentByRails. Todos los derechos reservados.</p>
+      <p>
+        <a href="#" class="text-white text-decoration-none">Términos de Servicio</a> | 
+        <a href="#" class="text-white text-decoration-none">Política de Privacidad</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

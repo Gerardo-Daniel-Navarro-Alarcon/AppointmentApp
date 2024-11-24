@@ -1,0 +1,15 @@
+<!-- app/views/low_stock_mailer/notify.html.erb -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Alerta de Inventario Bajo</title>
+</head>
+<body>
+  <h1>Alerta de Inventario Bajo</h1>
+  <p>Estimado administrador,</p>
+  <p>El inventario del producto <strong><%= @product.name %></strong> ha bajado a <%= @product.stock %> unidades.</p>
+  <p>Es recomendable que revises el inventario y tomes las acciones necesarias.</p>
+  <p>Saludos,<br>Equipo de AppointmentByRails</p>
+</body>
+</html>

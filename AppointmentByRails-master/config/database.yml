@@ -1,0 +1,24 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+  host: localhost
+  port: 5432
+
+development:
+  <<: *default
+  database: appointment_by_rails_development
+  username: postgres
+  password: root
+
+test:
+  <<: *default
+  database: appointment_by_rails_test
+  username: postgres
+  password: root
+
+production:
+  <<: *default
+  database: appointment_by_rails_production
+  username: postgres
+  password: root

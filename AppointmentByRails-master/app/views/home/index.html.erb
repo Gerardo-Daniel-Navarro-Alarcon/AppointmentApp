@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inicio | AppointmentByRails</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+  <!-- Encabezado -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="#">AppointmentByRails</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <%= link_to "Empleados", employees_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Servicios", services_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Productos", products_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Citas", appointments_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sección de Bienvenida -->
+  <header class="bg-white text-center py-5 shadow-sm">
+    <h1 class="display-4 fw-bold text-primary">Bienvenido a AppointmentByRails</h1>
+    <p class="lead text-muted">Administra empleados, citas, productos y servicios en un solo lugar.</p>
+    <div class="mt-4">
+      <%= link_to "Explorar Empleados", employees_path, class: "btn btn-primary btn-lg me-2" %>
+      <%= link_to "Ver Citas", appointments_path, class: "btn btn-outline-secondary btn-lg" %>
+    </div>
+  </header>
+
+  <!-- Sección Destacada -->
+  <section class="container my-5">
+    <div class="row text-center g-4">
+      <div class="col-md-4">
+        <img src="https://via.placeholder.com/150" class="rounded-circle mb-3" alt="Empleados">
+        <h3 class="fw-bold text-primary">Gestión de Empleados</h3>
+        <p class="text-muted">Consulta y gestiona a tu personal fácilmente desde esta sección.</p>
+        <%= link_to "Empleados", employees_path, class: "btn btn-outline-primary" %>
+      </div>
+      <div class="col-md-4">
+        <img src="https://via.placeholder.com/150" class="rounded-circle mb-3" alt="Servicios">
+        <h3 class="fw-bold text-primary">Servicios Ofrecidos</h3>
+        <p class="text-muted">Define los servicios disponibles y controla su estado.</p>
+        <%= link_to "Servicios", services_path, class: "btn btn-outline-primary" %>
+      </div>
+      <div class="col-md-4">
+        <img src="https://via.placeholder.com/150" class="rounded-circle mb-3" alt="Productos">
+        <h3 class="fw-bold text-primary">Productos</h3>
+        <p class="text-muted">Administra los productos que tienes en inventario.</p>
+        <%= link_to "Productos", products_path, class: "btn btn-outline-primary" %>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección de Citas -->
+  <section class="bg-white py-5">
+    <div class="container text-center">
+      <h2 class="fw-bold text-primary">Control de Citas</h2>
+      <p class="lead text-muted">Consulta todas las citas programadas y organiza tus tiempos de manera eficiente.</p>
+      <%= link_to "Ver Citas", appointments_path, class: "btn btn-primary btn-lg" %>
+    </div>
+  </section>
+
+  <!-- Pie de Página -->
+  <footer class="bg-dark text-white text-center py-3">
+    <div class="container">
+      <p>&copy; 2024 AppointmentByRails. Todos los derechos reservados.</p>
+      <p>
+        <a href="#" class="text-white text-decoration-none">Términos de Servicio</a> |
+        <a href="#" class="text-white text-decoration-none">Política de Privacidad</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

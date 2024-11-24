@@ -1,0 +1,117 @@
+<!DOCTYPE html> 
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalles de la Cita | AppointmentByRails</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+  <!-- Encabezado -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="#">AppointmentByRails</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <%= link_to "Inicio", inicio_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Empleados", employees_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Servicios", services_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Productos", products_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Citas", appointments_path, class: "nav-link active fw-semibold" %>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Notificación -->
+  <% if notice %>
+    <div class="alert alert-success text-center mt-3">
+      <%= notice %>
+    </div>
+  <% end %>
+
+  <!-- Sección de Detalles de la Cita -->
+  <section class="container mt-5">
+    <div class="card shadow-sm p-4">
+      <h2 class="card-title fw-bold">Detalles de la Cita</h2>
+
+      <!-- Verificación de estado del servicio y conflictos -->
+      <% if !@appointment.service.active? %>
+        <div class="alert alert-warning">
+          <strong>Advertencia:</strong> El servicio asociado a esta cita no está activo.
+        </div>
+      <% end %>
+
+      <!-- Simulación de conflicto de horario -->
+      <% if @appointment.conflict? %>
+        <div class="alert alert-warning">
+          <strong>Advertencia:</strong> Esta cita tiene un conflicto de horario con otra cita del mismo empleado.
+        </div>
+      <% end %>
+
+      <p><strong>Empleado:</strong> <%= @appointment.employee.full_name %></p>
+      <p><strong>Servicio:</strong> <%= @appointment.service.name %></p>
+      <p><strong>Fecha y Hora:</strong> <%= l(@appointment.appointment_date, format: :long) %></p>
+      <% if @appointment.status.present? %>
+        <p><strong>Estado:</strong> <%= @appointment.status.capitalize %></p>
+      <% end %>
+
+      <!-- Productos Asociados -->
+      <h3 class="mt-4">Productos Asociados</h3>
+      <ul class="list-group">
+        <% @appointment.appointment_products.each do |appointment_product| %>
+          <li class="list-group-item d-flex justify-content-between align-items-start">
+            <div>
+              <strong><%= appointment_product.product.name %></strong><br>
+              <span>Cantidad: <%= appointment_product.quantity %></span>
+            </div>
+            <div>
+              <span>Stock Restante: <%= appointment_product.product.stock %></span>
+              <% low_stock_threshold = appointment_product.product.low_stock_threshold || 5 %>
+              <% if appointment_product.product.stock < low_stock_threshold %>
+                <span class="badge bg-warning text-dark ms-2">¡Inventario Bajo!</span>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="mt-4 d-flex justify-content-between">
+      <div>
+        <%= link_to "Editar esta cita", edit_appointment_path(@appointment), class: "btn btn-outline-primary me-2" %>
+        <%= link_to "Volver a Citas", appointments_path, class: "btn btn-outline-secondary" %>
+      </div>
+      <%= button_to "Eliminar esta cita", @appointment, method: :delete, data: { confirm: "¿Estás seguro?" }, class: "btn btn-danger" %>
+    </div>
+  </section>
+
+  <!-- Pie de Página -->
+  <footer class="bg-dark text-white text-center py-3 mt-5">
+    <div class="container">
+      <p>&copy; 2024 AppointmentByRails. Todos los derechos reservados.</p>
+      <p>
+        <a href="#" class="text-white text-decoration-none">Términos de Servicio</a> | 
+        <a href="#" class="text-white text-decoration-none">Política de Privacidad</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

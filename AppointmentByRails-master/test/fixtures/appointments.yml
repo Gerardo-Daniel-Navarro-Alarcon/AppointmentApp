@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  employee: one
+  service: one
+  appointment_date: 2024-10-29 21:39:59
+  status: MyString
+  notes: MyText
+  created_at: 2024-10-29 21:39:59
+  updated_at: 2024-10-29 21:39:59
+
+two:
+  employee: two
+  service: two
+  appointment_date: 2024-10-29 21:39:59
+  status: MyString
+  notes: MyText
+  created_at: 2024-10-29 21:39:59
+  updated_at: 2024-10-29 21:39:59

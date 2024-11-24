@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editing Employee | AppointmentByRails</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+  <!-- Encabezado -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="#">AppointmentByRails</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <%= link_to "Inicio", inicio_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Empleados", employees_path, class: "nav-link active fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Servicios", services_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Productos", products_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Citas", appointments_path, class: "nav-link text-white fw-semibold" %>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sección de Edición de Empleado -->
+  <section class="container mt-5">
+    <h1 class="text-primary fw-bold mb-4">Editar Empleado</h1>
+
+    <div class="card shadow-sm p-4">
+      <%= render "form", employee: @employee %>
+    </div>
+
+    <div class="mt-4 d-flex justify-content-between">
+      <%= link_to "Ver este empleado", @employee, class: "btn btn-outline-primary me-2" %>
+      <%= link_to "Volver a Empleados", employees_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </section>
+
+  <!-- Pie de Página -->
+  <footer class="bg-dark text-white text-center py-3 mt-5">
+    <div class="container">
+      <p>&copy; 2024 AppointmentByRails. Todos los derechos reservados.</p>
+      <p>
+        <a href="#" class="text-white text-decoration-none">Términos de Servicio</a> | 
+        <a href="#" class="text-white text-decoration-none">Política de Privacidad</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
