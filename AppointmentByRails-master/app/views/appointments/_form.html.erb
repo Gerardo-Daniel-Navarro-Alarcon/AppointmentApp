@@ -1,135 +1,60 @@
-<%= form_with(model: appointment, local: true) do |form| %>
-  <!-- Mensaje informativo sobre la disponibilidad -->
-  <div class="alert alert-info">
-    <strong>Nota:</strong> La disponibilidad del empleado y del servicio se verifica automáticamente al guardar la cita.
-  </div>
-
-  <!-- Mensajes de Error Globales -->
-  <% if appointment.errors.any? %>
+<%= form_with(model: @appointment, local: true) do |form| %>
+  <% if @appointment.errors.any? %>
     <div class="alert alert-danger">
-      <h2><%= pluralize(appointment.errors.count, "error") %> impide que esta cita sea guardada:</h2>
+      <h4><%= pluralize(@appointment.errors.count, "error") %> impidieron guardar esta cita:</h4>
       <ul>
-        <% appointment.errors.full_messages.each do |msg| %>
-          <li><%= msg %></li>
+        <% @appointment.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
         <% end %>
       </ul>
     </div>
   <% end %>
 
   <!-- Campo: Empleado -->
-  <div class="mb-3">
-    <%= form.label :employee_id, "Empleado", class: "form-label" %>
-    <%= form.collection_select :employee_id, employees, :id, :full_name, { prompt: "Seleccione un empleado" }, class: "form-select", required: true %>
-    <% if appointment.errors[:employee_id].any? %>
-      <div class="text-danger"><%= appointment.errors[:employee_id].first %></div>
-    <% end %>
+  <div class="form-group mb-3">
+    <%= form.label :employee_id, "Empleado" %>
+    <%= form.collection_select :employee_id, @employees, :id, :name, 
+        { prompt: "Seleccione un empleado" }, 
+        { class: "form-select" } %>
   </div>
 
   <!-- Campo: Servicio -->
-  <div class="mb-3">
-    <%= form.label :service_id, "Servicio", class: "form-label" %>
-    <%= form.collection_select :service_id, services, :id, :name, { prompt: "Seleccione un servicio" }, class: "form-select", required: true %>
-    <% if appointment.errors[:service_id].any? %>
-      <div class="text-danger"><%= appointment.errors[:service_id].first %></div>
-    <% end %>
+  <div class="form-group mb-3">
+    <%= form.label :service_id, "Servicio" %>
+    <%= form.collection_select :service_id, @services, :id, :name, 
+        { prompt: "Seleccione un servicio" }, 
+        { class: "form-select" } %>
   </div>
 
-  <!-- Campo: Fecha y Hora de la Cita -->
-  <div class="mb-3">
-    <%= form.label :appointment_date, "Fecha y Hora de la Cita", class: "form-label" %>
-    <%= form.datetime_field :appointment_date, class: "form-control", required: true %>
-    <% if appointment.errors[:appointment_date].any? %>
-      <div class="text-danger"><%= appointment.errors[:appointment_date].first %></div>
-    <% end %>
+  <!-- Campo: Productos -->
+  <div class="form-group mb-3">
+    <%= form.label :product_ids, "Productos" %>
+    <%= form.collection_select :product_ids, @products, :id, :name, 
+        { prompt: "Seleccione productos" }, 
+        { multiple: true, class: "form-select", size: 5 } %>
   </div>
 
-  <!-- Campo: Estado de la Cita -->
-  <div class="mb-3">
-    <%= form.label :status, "Estado", class: "form-label" %>
-    <%= form.select :status, [["Pendiente", "pending"], ["Confirmada", "confirmed"], ["Cancelada", "canceled"]], {}, class: "form-select", required: true %>
-    <% if appointment.errors[:status].any? %>
-      <div class="text-danger"><%= appointment.errors[:status].first %></div>
-    <% end %>
+  <!-- Campo: Fecha y Hora -->
+  <div class="form-group mb-3">
+    <%= form.label :appointment_date, "Fecha y Hora" %>
+    <%= form.datetime_local_field :appointment_date, class: "form-control" %>
+  </div>
+
+  <!-- Campo: Estado -->
+  <div class="form-group mb-3">
+    <%= form.label :status, "Estado" %>
+    <%= form.select :status, Appointment.statuses.keys.map { |s| [s.titleize, s] }, 
+        { prompt: "Seleccione un estado" }, 
+        { class: "form-select" } %>
   </div>
 
   <!-- Campo: Notas -->
-  <div class="mb-3">
-    <%= form.label :notes, "Notas", class: "form-label" %>
-    <%= form.text_area :notes, class: "form-control", rows: 3 %>
+  <div class="form-group mb-3">
+    <%= form.label :notes, "Notas" %>
+    <%= form.text_area :notes, class: "form-control", rows: 5 %>
   </div>
 
-  <!-- Campo para asociar productos -->
-  <div class="mb-3">
-    <%= form.label :product_ids, "Productos", class: "form-label" %>
-    <%= form.collection_select :product_ids, products, :id, :name, { prompt: "Selecciona productos" }, { multiple: true, class: "form-select" } %>
-    <% if appointment.errors[:product_ids].any? %>
-      <div class="text-danger"><%= appointment.errors[:product_ids].first %></div>
-    <% end %>
-  </div>
-
-  <!-- Botón de Envío -->
-  <div class="mt-4">
+  <div class="actions">
     <%= form.submit "Guardar Cita", class: "btn btn-primary" %>
   </div>
-<% end %>
-
-<!-- app/views/employees/_form.html.erb -->
-
-<%= form_with(model: employee, local: true) do |form| %>
-  <!-- Mensajes de Error Globales -->
-  <% if employee.errors.any? %>
-    <div class="alert alert-danger">
-      <h2><%= pluralize(employee.errors.count, "error") %> impidió que este empleado fuera guardado:</h2>
-      <ul>
-        <% employee.errors.full_messages.each do |msg| %>
-          <li><%= msg %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
-
-  <!-- Campo: Nombre -->
-  <div class="mb-3">
-    <%= form.label :first_name, "Nombre", class: "form-label" %>
-    <%= form.text_field :first_name, class: "form-control", required: true %>
-  </div>
-
-  <!-- Campo: Apellido -->
-  <div class="mb-3">
-    <%= form.label :last_name, "Apellido", class: "form-label" %>
-    <%= form.text_field :last_name, class: "form-control", required: true %>
-  </div>
-
-  <!-- Campo: Email -->
-  <div class="mb-3">
-    <%= form.label :email, "Correo Electrónico", class: "form-label" %>
-    <%= form.email_field :email, class: "form-control", required: true %>
-  </div>
-
-  <!-- Campo: Contraseña -->
-  <div class="mb-3">
-    <%= form.label :password, "Contraseña", class: "form-label" %>
-    <%= form.password_field :password, class: "form-control", required: true %>
-  </div>
-
-  <!-- Campo: Confirmación de Contraseña -->
-  <div class="mb-3">
-    <%= form.label :password_confirmation, "Confirmar Contraseña", class: "form-label" %>
-    <%= form.password_field :password_confirmation, class: "form-control", required: true %>
-  </div>
-
-  <!-- Campo: Rol -->
-  <div class="mb-3">
-    <%= form.label :role_id, "Rol", class: "form-label" %>
-    <%= form.collection_select :role_id, Role.all, :id, :name, { prompt: "Selecciona un rol" }, class: "form-select", required: true %>
-  </div>
-
-  <!-- Campo: Número de Teléfono -->
-  <div class="mb-3">
-    <%= form.label :phone_number, "Teléfono", class: "form-label" %>
-    <%= form.telephone_field :phone_number, class: "form-control" %>
-  </div>
-
-  <!-- Botón de Envío -->
-  <%= form.submit class: "btn btn-primary" %>
 <% end %>

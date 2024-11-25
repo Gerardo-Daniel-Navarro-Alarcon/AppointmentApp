@@ -7,6 +7,8 @@ class Employee < ApplicationRecord
 
   has_many :employee_services, dependent: :destroy
   has_many :services, through: :employee_services
+  has_many :appointments
+
 
   # Validaciones
   validates :first_name, presence: true
@@ -27,6 +29,10 @@ class Employee < ApplicationRecord
 
   # Método para obtener nombre completo
   def full_name
+    "#{first_name} #{last_name}"
+  end
+    # Asume que tienes los campos first_name y last_name
+  def name
     "#{first_name} #{last_name}"
   end
 

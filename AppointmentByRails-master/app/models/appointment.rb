@@ -5,14 +5,14 @@ class Appointment < ApplicationRecord
   has_many :appointment_products, dependent: :destroy
   has_many :products, through: :appointment_products
 
-  # Definir los estados permitidos usando enum
+  # Definir los estados permitidos usando enum con argumentos posicionales (para compatibilidad con Rails 8)
   enum status: { pendiente: 0, confirmada: 1, cancelada: 2, completada: 3 }
 
   # Validaciones
   validates :status, presence: true
   validates :employee_id, :service_id, :appointment_date, presence: true
 
-  # Validaciones personalizadas (si son necesarias)
+  # Validaciones personalizadas
   validate :appointment_date_cannot_be_in_the_past
   validate :employee_availability
   validate :service_availability
@@ -44,6 +44,17 @@ class Appointment < ApplicationRecord
   # Métodos privados
   # Por ejemplo, puedes tener métodos de validación personalizada
 
+  def appointment_date_cannot_be_in_the_past
+    if appointment_date.present? && appointment_date < Time.current
+      errors.add(:appointment_date, "no puede estar en el pasado")
+    end
+  end
+    def appointment_date_cannot_be_in_the_past
+    if appointment_date.present? && appointment_date < Time.current
+      errors.add(:appointment_date, "no puede estar en el pasado")
+    end
+  end
+  
   # Método de validación personalizada para verificar disponibilidad del empleado
   def employee_availability
     if conflict?

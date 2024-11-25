@@ -1,7 +1,8 @@
 # app/controllers/appointments_controller.rb
 class AppointmentsController < ApplicationController
-  skip_before_action :verify_authenticity_token, if: -> { request.format.json? }
+  before_action :authenticate_employee! # Asumiendo que tienes una autenticación
   before_action :set_appointment, only: %i[show edit update destroy]
+  before_action :load_form_data, only: %i[new edit]
 
   # GET /appointments or /appointments.json
   def index
@@ -23,63 +24,50 @@ class AppointmentsController < ApplicationController
   # GET /appointments/new
   def new
     @appointment = Appointment.new
-    @employees = Employee.all
-    @services = Service.where(active: true)
-    @products = Product.where(active: true)
   end
 
+  # GET /appointments/:id/edit
   def edit
-    @appointment = Appointment.find(params[:id])
-    @employees = Employee.all
-    @services = Service.where(active: true)
-    @products = Product.where(active: true)
-    @selected_products = @appointment.products.pluck(:id)
+    # @appointment ya está establecido por set_appointment
   end
 
-  # POST /appointments or /appointments.json
+  # POST /appointments
   def create
     @appointment = Appointment.new(appointment_params)
-    respond_to do |format|
+
+    ActiveRecord::Base.transaction do
       if @appointment.save
-        # Asocia productos si se seleccionaron
-        if params[:appointment][:product_ids].present?
-          params[:appointment][:product_ids].each do |product_id|
-            @appointment.appointment_products.create!(product_id: product_id, quantity: 1) # Ajusta la cantidad según sea necesario
-          end
-        end
-        format.html { redirect_to @appointment, notice: 'La cita fue creada exitosamente.' }
-        format.json { render :show, status: :created, location: @appointment }
+        # Asociar productos si se seleccionaron
+        associate_products
+        redirect_to @appointment, notice: 'La cita fue creada exitosamente.'
       else
-        format.html do
-          flash.now[:alert] = @appointment.errors.full_messages.join(", ")
-          render :new, status: :unprocessable_entity
-        end
-        format.json { render json: @appointment.errors, status: :unprocessable_entity }
+        load_form_data
+        render :new
       end
     end
+  rescue ActiveRecord::RecordInvalid => e
+    load_form_data
+    @appointment.errors.add(:base, e.message)
+    render :new
   end
 
-  # PATCH/PUT /appointments/1 or /appointments/1.json
+  # PATCH/PUT /appointments/:id
   def update
-    respond_to do |format|
+    ActiveRecord::Base.transaction do
       if @appointment.update(appointment_params)
-        # Actualiza asociaciones de productos
+        # Actualizar productos si se seleccionaron
         @appointment.appointment_products.destroy_all
-        if params[:appointment][:product_ids].present?
-          params[:appointment][:product_ids].each do |product_id|
-            @appointment.appointment_products.create!(product_id: product_id, quantity: 1) # Ajusta la cantidad según sea necesario
-          end
-        end
-        format.html { redirect_to @appointment, notice: 'La cita fue actualizada exitosamente.' }
-        format.json { render :show, status: :ok, location: @appointment }
+        associate_products
+        redirect_to @appointment, notice: 'La cita fue actualizada exitosamente.'
       else
-        format.html do
-          flash.now[:alert] = @appointment.errors.full_messages.join(", ")
-          render :edit, status: :unprocessable_entity
-        end
-        format.json { render json: @appointment.errors, status: :unprocessable_entity }
+        load_form_data
+        render :edit
       end
     end
+  rescue ActiveRecord::RecordInvalid => e
+    load_form_data
+    @appointment.errors.add(:base, e.message)
+    render :edit
   end
 
   # DELETE /appointments/1 or /appointments/1.json
@@ -93,21 +81,43 @@ class AppointmentsController < ApplicationController
 
   private
 
-  # Use callbacks to share common setup or constraints between actions.
+  # Método para establecer la cita
   def set_appointment
     @appointment = Appointment.find(params[:id])
   rescue ActiveRecord::RecordNotFound
-    respond_to do |format|
-      format.html { redirect_to appointments_url, alert: 'Cita no encontrada.' }
-      format.json { render json: { error: 'Cita no encontrada' }, status: :not_found }
-    end
+    redirect_to appointments_path, alert: 'Cita no encontrada'
   end
 
-  # Only allow a list of trusted parameters through.
-  def appointment_params
-    params.require(:appointment).permit(:employee_id, :service_id, :appointment_date, :status, :notes, product_ids: [])
+  # Método para cargar datos necesarios para el formulario
+  def load_form_data
+    @employees = Employee.all
+    @services = Service.where(active: true)
+    @products = Product.where(active: true)
   end
-  
+
+  # Parámetros permitidos
+  def appointment_params
+    params.require(:appointment).permit(
+      :employee_id,
+      :service_id,
+      :appointment_date,
+      :status,
+      :notes,
+      product_ids: [] # Permite un array de product_ids
+    )
+  end
+
+  # Método para asociar productos con una cantidad predeterminada
+  def associate_products
+    return unless params[:appointment][:product_ids].present?
+
+    params[:appointment][:product_ids].reject(&:blank?).each do |product_id|
+      @appointment.appointment_products.create!(
+        product_id: product_id,
+        quantity: 1 # Cantidad predeterminada
+      )
+    end
+  end
 end
 
 # app/controllers/products_controller.rb
