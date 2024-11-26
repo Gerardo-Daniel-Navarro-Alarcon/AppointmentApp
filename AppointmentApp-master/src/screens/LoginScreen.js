@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ScrollView, Modal } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { API_BASE_URL } from '@env';
 import axios from 'axios';
@@ -9,6 +9,8 @@ const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [secureText, setSecureText] = useState(true); // Estado para controlar la visibilidad
+    const [isForgotPasswordVisible, setForgotPasswordVisible] = useState(false);
+    const [isRegisterVisible, setRegisterVisible] = useState(false);
 
     const handleLogin = async () => {
         try {
@@ -83,14 +85,90 @@ const LoginScreen = ({ navigation }) => {
 
                 {/* Enlaces Adicionales */}
                 <View style={styles.linksContainer}>
-                    <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+                    <TouchableOpacity onPress={() => setForgotPasswordVisible(true)}>
                         <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                    <TouchableOpacity onPress={() => setRegisterVisible(true)}>
                         <Text style={styles.linkText}>¿No tienes una cuenta? Regístrate</Text>
                     </TouchableOpacity>
                 </View>
             </View>
+
+            {/* Modal de Forgot Password */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={isForgotPasswordVisible}
+                onRequestClose={() => setForgotPasswordVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalTitle}>Recuperar Contraseña</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Correo electrónico"
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                        />
+                        <TouchableOpacity 
+                            style={styles.button} 
+                            onPress={() => {
+                                // Lógica para recuperar contraseña
+                                Alert.alert("Enviado", "Revisa tu correo electrónico para más instrucciones.");
+                                setForgotPasswordVisible(false);
+                            }}
+                        >
+                            <Text style={styles.buttonText}>Enviar</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setForgotPasswordVisible(false)}>
+                            <Text style={styles.closeText}>Cerrar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Modal de Register */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={isRegisterVisible}
+                onRequestClose={() => setRegisterVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalTitle}>Crear Cuenta</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nombre"
+                            autoCapitalize="words"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Correo electrónico"
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Contraseña"
+                            secureTextEntry
+                        />
+                        <TouchableOpacity 
+                            style={styles.button} 
+                            onPress={() => {
+                                // Lógica para registrar usuario
+                                Alert.alert("Cuenta creada", "Tu cuenta ha sido creada exitosamente.");
+                                setRegisterVisible(false);
+                            }}
+                        >
+                            <Text style={styles.buttonText}>Registrarse</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setRegisterVisible(false)}>
+                            <Text style={styles.closeText}>Cerrar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </ScrollView>
     );
 };
@@ -127,7 +205,7 @@ const styles = StyleSheet.create({
         marginLeft: 10,
     },
     button: {
-        backgroundColor: '#4CAF50',
+        backgroundColor: '#ff6b6b',
         paddingVertical: 15,
         borderRadius: 30,
         alignItems: 'center',
@@ -143,9 +221,40 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     linkText: {
-        color: '#fff',
+        color: '#1E90FF',
+        textAlign: 'center',
+        marginTop: 10,
         textDecorationLine: 'underline',
-        marginVertical: 5,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: '#000',
+        borderRadius: 10,
+        padding: 35,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 15,
+    },
+    closeText: {
+        color: '#1E90FF',
+        textAlign: 'center',
+        textDecorationLine: 'underline',
     },
 });
 

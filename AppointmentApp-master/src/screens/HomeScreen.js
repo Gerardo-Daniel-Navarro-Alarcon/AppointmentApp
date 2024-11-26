@@ -16,12 +16,6 @@ const HomeScreen = () => {
         loadToken();
     }, []);
 
-    const handleLogout = async () => {
-        await SecureStore.deleteItemAsync('authToken');
-        Alert.alert("Cierre de sesión exitoso");
-        navigation.navigate("Login");
-    };
-
     const handleNavigate = (screen) => {
         navigation.navigate(screen);
     };
@@ -57,11 +51,6 @@ const HomeScreen = () => {
                             <Text style={styles.cardText}>Citas</Text>
                         </TouchableOpacity>
                     </View>
-
-                    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                        <MaterialIcons name="logout" size={20} color="#fff" />
-                        <Text style={styles.logoutText}>Cerrar Sesión</Text>
-                    </TouchableOpacity>
                 </>
             ) : (
                 <Text style={styles.info}>Cargando...</Text>
@@ -103,7 +92,7 @@ const styles = StyleSheet.create({
     card: {
         width: '40%',
         paddingVertical: 20,
-        backgroundColor: '#4a90e2',
+        backgroundColor: '#ff6b6b',
         borderRadius: 10,
         alignItems: 'center',
         marginVertical: 10,
@@ -119,17 +108,6 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         marginTop: 8,
         textAlign: 'center',
-    },
-    logoutButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 15,
-        paddingHorizontal: 25,
-        backgroundColor: '#d9534f',
-        borderRadius: 30,
-        width: '80%',
-        marginTop: 20,
     },
     logoutText: {
         color: '#fff',
