@@ -23,19 +23,29 @@ const ProductsScreen = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [detailsModalVisible, setDetailsModalVisible] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [currentProduct, setCurrentProduct] = useState({});
     const [form, setForm] = useState({
         name: '',
         description: '',
         price: '',
         stock: '',
-        created_at: '',
-        updated_at: '',
+        category_id: '',
+        low_stock_threshold: '',
+        active: true
     });
 
     // Validar formulario
     const validateForm = () => {
-        if (!form.name || !form.price || !form.stock) {
-            setError('Por favor complete los campos requeridos');
+        if (!form.name || !form.price || !form.stock || !form.category_id) {
+            setError('Por favor complete los campos requeridos: nombre, precio, stock y categoría');
+            return false;
+        }
+        if (isNaN(form.price) || parseFloat(form.price) <= 0) {
+            setError('El precio debe ser un número válido mayor a 0');
+            return false;
+        }
+        if (isNaN(form.stock) || parseInt(form.stock) < 0) {
+            setError('El stock debe ser un número válido igual o mayor a 0');
             return false;
         }
         return true;
@@ -46,14 +56,17 @@ const ProductsScreen = () => {
     }, []);
 
     const fetchProducts = async () => {
+        setLoading(true);
         try {
             const token = await SecureStore.getItemAsync('authToken');
             const response = await axios.get(`${API_BASE_URL}/products.json`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setProducts(response.data);
-        } catch (err) {
-            setError('Error al cargar productos');
+            setError(null);
+        } catch (error) {
+            console.error('Error fetching products:', error);
+            setError('Error al cargar los productos');
         } finally {
             setLoading(false);
         }
@@ -62,15 +75,16 @@ const ProductsScreen = () => {
     const handleOpenModal = (product = null) => {
         if (product) {
             setIsEditing(true);
+            setCurrentProduct(product);
             setForm({
-                name: product.name,
-                description: product.description,
-                price: product.price.toString(),
-                stock: product.stock.toString(),
-                created_at: product.created_at,
-                updated_at: product.updated_at,
+                name: product.name || '',
+                description: product.description || '',
+                price: product.price?.toString() || '',
+                stock: product.stock?.toString() || '',
+                category_id: product.category_id?.toString() || '',
+                low_stock_threshold: product.low_stock_threshold?.toString() || '',
+                active: product.active
             });
-            setSelectedProduct(product);
         } else {
             setIsEditing(false);
             setForm({
@@ -78,8 +92,9 @@ const ProductsScreen = () => {
                 description: '',
                 price: '',
                 stock: '',
-                created_at: '',
-                updated_at: '',
+                category_id: '',
+                low_stock_threshold: '',
+                active: true
             });
         }
         setModalVisible(true);
@@ -249,8 +264,8 @@ const ProductsScreen = () => {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Lista de Productos</Text>
-            <TouchableOpacity style={styles.addButton} onPress={() => handleOpenModal()}>
-                <Text style={styles.addButtonText}>+ Crear Producto</Text>
+            <TouchableOpacity onPress={() => handleOpenModal()} style={styles.addButton}>
+                <Text style={styles.addButtonText}>+ Añadir Producto</Text>
             </TouchableOpacity>
             {loading ? (
                 <ActivityIndicator size="large" color="#007bff" style={styles.loading} />

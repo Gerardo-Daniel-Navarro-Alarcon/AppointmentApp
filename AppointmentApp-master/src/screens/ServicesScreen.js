@@ -27,14 +27,24 @@ const ServicesScreen = () => {
         name: '',
         description: '',
         price: '',
+        duration: '',
+        category_id: '',
         created_at: '',
         updated_at: '',
     });
 
     // Validar formulario
     const validateForm = () => {
-        if (!form.name || !form.price) {
-            setError('Por favor complete los campos requeridos');
+        if (!form.name || !form.price || !form.duration || !form.category_id) {
+            setError('Por favor complete los campos requeridos: nombre, precio, duración y categoría');
+            return false;
+        }
+        if (isNaN(form.price) || parseFloat(form.price) <= 0) {
+            setError('El precio debe ser un número válido mayor a 0');
+            return false;
+        }
+        if (isNaN(form.duration) || parseInt(form.duration) <= 0) {
+            setError('La duración debe ser un número válido mayor a 0');
             return false;
         }
         return true;
@@ -45,14 +55,16 @@ const ServicesScreen = () => {
     }, []);
 
     const fetchServices = async () => {
+        setLoading(true);
         try {
             const token = await SecureStore.getItemAsync('authToken');
             const response = await axios.get(`${API_BASE_URL}/services.json`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setServices(response.data);
-        } catch (err) {
-            setError('Error al cargar servicios');
+        } catch (error) {
+            console.error('Error fetching services:', error);
+            setError('Error al cargar los servicios');
         } finally {
             setLoading(false);
         }

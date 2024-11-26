@@ -17,6 +17,7 @@ import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 
 const AppointmentsScreen = () => {
     const [appointments, setAppointments] = useState([]);
+    const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
@@ -36,7 +37,7 @@ const AppointmentsScreen = () => {
     // Validar formulario
     const validateForm = () => {
         if (!form.employee_id || !form.service_id || !form.appointment_date) {
-            setError('Por favor, complete los campos requeridos');
+            setError('Por favor, completa los campos requeridos.');
             return false;
         }
         return true;
@@ -44,6 +45,7 @@ const AppointmentsScreen = () => {
 
     useEffect(() => {
         fetchAppointments();
+        fetchServices();
     }, []);
 
     const fetchAppointments = async () => {
@@ -57,6 +59,18 @@ const AppointmentsScreen = () => {
             setError('Error al cargar citas');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchServices = async () => {
+        try {
+            const token = await SecureStore.getItemAsync('authToken');
+            const response = await axios.get(`${API_BASE_URL}/services.json`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setServices(response.data);
+        } catch (error) {
+            console.error('Error fetching services:', error);
         }
     };
 
@@ -93,26 +107,14 @@ const AppointmentsScreen = () => {
         if (!validateForm()) return;
 
         setLoading(true);
+        setError(null);
+
         try {
             const token = await SecureStore.getItemAsync('authToken');
-            const method = isEditing ? 'PUT' : 'POST';
-            const url = isEditing
-                ? `${API_BASE_URL}/appointments/${selectedAppointment.id}.json`
-                : `${API_BASE_URL}/appointments.json`;
-
-            const response = await axios({
-                method,
-                url,
-                headers: { Authorization: `Bearer ${token}` },
-                data: form
+            const response = await axios.post(`${API_BASE_URL}/appointments.json`, form, {
+                headers: { Authorization: `Bearer ${token}` }
             });
-
-            if (isEditing) {
-                setAppointments(appointments.map(a => a.id === selectedAppointment.id ? response.data : a));
-            } else {
-                setAppointments([...appointments, response.data]);
-            }
-
+            setAppointments([...appointments, response.data]);
             setModalVisible(false);
             setForm({
                 employee_id: '',
@@ -124,7 +126,7 @@ const AppointmentsScreen = () => {
                 updated_at: '',
             });
         } catch (err) {
-            setError('Error al guardar cita');
+            setError('Error al crear la cita.');
         } finally {
             setLoading(false);
         }
@@ -182,84 +184,48 @@ const AppointmentsScreen = () => {
     // Modal de Detalles
     const AppointmentDetailsModal = () => (
         <Modal
-            visible={detailsModalVisible}
             animationType="slide"
             transparent={true}
+            visible={detailsModalVisible}
             onRequestClose={() => setDetailsModalVisible(false)}
         >
-            <View style={styles.modalOverlay}>
-                <View style={styles.modalContent}>
+            <View style={styles.centeredView}>
+                <View style={styles.modalView}>
                     <Text style={styles.modalTitle}>Detalles de la Cita</Text>
-
-                    {selectedAppointment ? (
-                        <ScrollView>
-                            <View style={styles.detailsContainer}>
-                                <View style={styles.detailRow}>
-                                    <MaterialIcons name="person" size={24} color="#fff" />
-                                    <View style={styles.detailInfo}>
-                                        <Text style={styles.detailLabel}>Empleado ID</Text>
-                                        <Text style={styles.detailValue}>{selectedAppointment.employee_id}</Text>
-                                    </View>
-                                </View>
-
-                                <View style={styles.detailRow}>
-                                    <MaterialIcons name="build" size={24} color="#fff" />
-                                    <View style={styles.detailInfo}>
-                                        <Text style={styles.detailLabel}>Servicio ID</Text>
-                                        <Text style={styles.detailValue}>{selectedAppointment.service_id}</Text>
-                                    </View>
-                                </View>
-
-                                <View style={styles.detailRow}>
-                                    <MaterialIcons name="event" size={24} color="#fff" />
-                                    <View style={styles.detailInfo}>
-                                        <Text style={styles.detailLabel}>Fecha y Hora</Text>
-                                        <Text style={styles.detailValue}>{formatDate(selectedAppointment.appointment_date)}</Text>
-                                    </View>
-                                </View>
-
-                                <View style={styles.detailRow}>
-                                    <MaterialIcons name="info" size={24} color="#fff" />
-                                    <View style={styles.detailInfo}>
-                                        <Text style={styles.detailLabel}>Estado</Text>
-                                        <Text style={styles.detailValue}>{selectedAppointment.status}</Text>
-                                    </View>
-                                </View>
-
-                                {selectedAppointment.notes && (
-                                    <View style={styles.detailRow}>
-                                        <MaterialIcons name="note" size={24} color="#fff" />
-                                        <View style={styles.detailInfo}>
-                                            <Text style={styles.detailLabel}>Notas</Text>
-                                            <Text style={styles.detailValue}>{selectedAppointment.notes}</Text>
-                                        </View>
-                                    </View>
-                                )}
-
-                                <View style={styles.detailRow}>
-                                    <MaterialIcons name="access-time" size={24} color="#fff" />
-                                    <View style={styles.detailInfo}>
-                                        <Text style={styles.detailLabel}>Creado</Text>
-                                        <Text style={styles.detailValue}>{formatDate(selectedAppointment.created_at)}</Text>
-                                    </View>
-                                    <MaterialIcons name="update" size={24} color="#fff" />
-                                    <View style={styles.detailInfo}>
-                                        <Text style={styles.detailLabel}>Actualizado</Text>
-                                        <Text style={styles.detailValue}>{formatDate(selectedAppointment.updated_at)}</Text>
-                                    </View>
-                                </View>
-                            </View>
-
-                            <TouchableOpacity
-                                style={styles.closeButton}
-                                onPress={() => setDetailsModalVisible(false)}
-                            >
-                                <Text style={styles.buttonText}>Cerrar</Text>
-                            </TouchableOpacity>
-                        </ScrollView>
-                    ) : (
-                        <ActivityIndicator size="large" color="#007bff" />
+                    {selectedAppointment && (
+                        <>
+                            <Text style={styles.modalText}>
+                                <Text style={styles.boldText}>Fecha: </Text>
+                                {new Date(selectedAppointment.date).toLocaleDateString()}
+                            </Text>
+                            <Text style={styles.modalText}>
+                                <Text style={styles.boldText}>Hora: </Text>
+                                {new Date(selectedAppointment.date).toLocaleTimeString()}
+                            </Text>
+                            <Text style={styles.modalText}>
+                                <Text style={styles.boldText}>Servicio: </Text>
+                                {services.find(s => s.id === selectedAppointment.service_id)?.name || 'N/A'}
+                            </Text>
+                            <Text style={styles.modalText}>
+                                <Text style={styles.boldText}>Duración: </Text>
+                                {services.find(s => s.id === selectedAppointment.service_id)?.duration || 'N/A'} minutos
+                            </Text>
+                            <Text style={styles.modalText}>
+                                <Text style={styles.boldText}>Precio: </Text>
+                                ${services.find(s => s.id === selectedAppointment.service_id)?.price || 'N/A'}
+                            </Text>
+                            <Text style={styles.modalText}>
+                                <Text style={styles.boldText}>Estado: </Text>
+                                {selectedAppointment.status}
+                            </Text>
+                        </>
                     )}
+                    <TouchableOpacity
+                        style={styles.closeButton}
+                        onPress={() => setDetailsModalVisible(false)}
+                    >
+                        <Text style={styles.textStyle}>Cerrar</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
         </Modal>
@@ -268,8 +234,8 @@ const AppointmentsScreen = () => {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Lista de Citas</Text>
-            <TouchableOpacity style={styles.addButton} onPress={() => handleOpenModal()}>
-                <Text style={styles.addButtonText}>+ Crear Cita</Text>
+            <TouchableOpacity onPress={() => handleOpenModal()} style={styles.addButton}>
+                <Text style={styles.addButtonText}>+ Añadir Cita</Text>
             </TouchableOpacity>
             {loading ? (
                 <ActivityIndicator size="large" color="#007bff" style={styles.loading} />
@@ -559,6 +525,19 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 10,
     },
+    boldText: {
+        fontWeight: 'bold'
+    },
+    modalText: {
+        marginBottom: 10,
+        textAlign: 'left',
+        fontSize: 16
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 15
+    }
 });
 
 export default AppointmentsScreen;

@@ -8,6 +8,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [secureText, setSecureText] = useState(true); // Estado para controlar la visibilidad
 
     const handleLogin = async () => {
         try {
@@ -18,24 +19,26 @@ const LoginScreen = ({ navigation }) => {
 
             if (response.data.token) {
                 await SecureStore.setItemAsync('authToken', response.data.token);
-                Alert.alert("Inicio de sesión exitoso");
-                navigation.navigate("Home");
+                // Navegar a la pantalla principal o donde corresponda
+                navigation.navigate('Home');
+            } else {
+                Alert.alert('Error', 'Credenciales inválidas');
             }
         } catch (error) {
-            if (error.response) {
-                console.log("Respuesta del servidor:", error.response.data);
-            }
-            Alert.alert("Error", "Credenciales inválidas");
+            console.error(error);
+            Alert.alert('Error', 'Hubo un problema al iniciar sesión');
         }
     };
 
+    const toggleSecureText = () => {
+        setSecureText(!secureText);
+    };
+
     return (
-        <ImageBackground
-            source={{ uri: 'https://your-image-url.com/background.jpg' }}
-            style={styles.background}
-        >
             <View style={styles.overlay}>
                 <Text style={styles.title}>Iniciar Sesión</Text>
+
+                {/* Campo de Correo Electrónico */}
                 <View style={styles.inputContainer}>
                     <Icon name="email-outline" size={24} color="#fff" />
                     <TextInput
@@ -45,71 +48,103 @@ const LoginScreen = ({ navigation }) => {
                         keyboardType="email-address"
                         value={email}
                         onChangeText={setEmail}
+                        autoCapitalize="none"
+                        autoCorrect={false}
                     />
                 </View>
+
+                {/* Campo de Contraseña con Ícono para Mostrar/Ocultar */}
                 <View style={styles.inputContainer}>
                     <Icon name="lock-outline" size={24} color="#fff" />
                     <TextInput
                         style={styles.input}
                         placeholder="Contraseña"
                         placeholderTextColor="#fff"
-                        secureTextEntry
+                        secureTextEntry={secureText}
                         value={password}
                         onChangeText={setPassword}
+                        autoCapitalize="none"
+                        autoCorrect={false}
                     />
+                    <TouchableOpacity onPress={toggleSecureText}>
+                        <Icon
+                            name={secureText ? 'eye-off-outline' : 'eye-outline'}
+                            size={24}
+                            color="#fff"
+                        />
+                    </TouchableOpacity>
                 </View>
+
+                {/* Botón de Iniciar Sesión */}
                 <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                    <Text style={styles.buttonText}>Ingresar</Text>
+                    <Text style={styles.buttonText}>Iniciar Sesión</Text>
                 </TouchableOpacity>
+
+                {/* Enlaces Adicionales */}
+                <View style={styles.linksContainer}>
+                    <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+                        <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                        <Text style={styles.linkText}>¿No tienes una cuenta? Regístrate</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-        </ImageBackground>
     );
 };
 
 const styles = StyleSheet.create({
-    background: { flex: 1, resizeMode: 'cover' },
-    overlay: {
+    background: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.6)',
+        resizeMode: 'cover',
         justifyContent: 'center',
+    },
+    overlay: {
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        margin: 20,
         padding: 20,
+        borderRadius: 10,
     },
     title: {
-        fontSize: 32,
+        fontSize: 28,
         fontWeight: 'bold',
         color: '#fff',
         textAlign: 'center',
-        marginBottom: 40,
+        marginBottom: 20,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        borderRadius: 30,
-        paddingHorizontal: 20,
+        borderBottomWidth: 1,
+        borderColor: '#fff',
         marginBottom: 20,
     },
     input: {
         flex: 1,
-        height: 50,
+        height: 40,
         color: '#fff',
         marginLeft: 10,
     },
     button: {
-        backgroundColor: '#ff6b6b',
+        backgroundColor: '#4CAF50',
         paddingVertical: 15,
-        borderRadius: 30,
+        borderRadius: 8,
         alignItems: 'center',
-        marginTop: 30,
-        shadowColor: '#ff6b6b',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.5,
-        shadowRadius: 20,
+        marginTop: 10,
     },
     buttonText: {
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
+    },
+    linksContainer: {
+        marginTop: 20,
+        alignItems: 'center',
+    },
+    linkText: {
+        color: '#fff',
+        textDecorationLine: 'underline',
+        marginVertical: 5,
     },
 });
 

@@ -28,7 +28,7 @@ const EmployeesScreen = () => {
     // Función para validar formulario
     const validateForm = () => {
         if (!form.first_name || !form.last_name || !form.email) {
-            setError('Por favor complete los campos requeridos');
+            setError('Por favor, completa los campos requeridos.');
             return false;
         }
         return true;
@@ -45,9 +45,10 @@ const EmployeesScreen = () => {
             const response = await axios.get(`${API_BASE_URL}/employees.json`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+            console.log(response.data); // Verifica que es una matriz
             setEmployees(response.data);
         } catch (error) {
-            Alert.alert("Error", "No se pudieron cargar los empleados");
+            setError('Error al cargar empleados');
         } finally {
             setLoading(false);
         }
@@ -74,6 +75,9 @@ const EmployeesScreen = () => {
 
     // Función para guardar empleado
     const handleSaveEmployee = async () => {
+        if (!validateForm()) return;
+        setLoading(true);
+        setError(null);
         try {
             const token = await SecureStore.getItemAsync('authToken');
             const employeeData = { ...form };
@@ -92,6 +96,8 @@ const EmployeesScreen = () => {
             fetchEmployees();
         } catch (error) {
             Alert.alert("Error", "No se pudo guardar el empleado");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -254,8 +260,8 @@ const EmployeesScreen = () => {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Lista de Empleados</Text>
-            <TouchableOpacity style={styles.addButton} onPress={() => handleOpenModal()}>
-                <Text style={styles.addButtonText}>+ Crear Empleado</Text>
+            <TouchableOpacity onPress={() => handleOpenModal()} style={styles.addButton}>
+                <Text style={styles.addButtonText}>+ Añadir Empleado</Text>
             </TouchableOpacity>
             {loading ? (
                 <ActivityIndicator size="large" color="#007bff" style={styles.loading} />
@@ -269,48 +275,60 @@ const EmployeesScreen = () => {
             )}
             <Modal visible={modalVisible} animationType="slide">
                 <ScrollView contentContainerStyle={styles.modalContainer}>
-                    <Text style={styles.modalTitle}>{isEditing ? 'Editar Empleado' : 'Nuevo Empleado'}</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Nombre"
-                        value={form.first_name}
-                        onChangeText={(text) => setForm({ ...form, first_name: text })}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Apellido"
-                        value={form.last_name}
-                        onChangeText={(text) => setForm({ ...form, last_name: text })}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Email"
-                        value={form.email}
-                        onChangeText={(text) => setForm({ ...form, email: text })}
-                    />
-                    {!isEditing && (
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>{isEditing ? 'Editar Empleado' : 'Nuevo Empleado'}</Text>
+                        
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nombre"
+                            value={form.first_name}
+                            onChangeText={(text) => setForm({ ...form, first_name: text })}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Apellido"
+                            value={form.last_name}
+                            onChangeText={(text) => setForm({ ...form, last_name: text })}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Correo Electrónico"
+                            value={form.email}
+                            onChangeText={(text) => setForm({ ...form, email: text })}
+                            keyboardType="email-address"
+                        />
                         <TextInput
                             style={styles.input}
                             placeholder="Contraseña"
-                            secureTextEntry
                             value={form.password}
                             onChangeText={(text) => setForm({ ...form, password: text })}
+                            secureTextEntry
                         />
-                    )}
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Rol"
-                        value={form.role}
-                        onChangeText={(text) => setForm({ ...form, role: text })}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Teléfono"
-                        value={form.phone_number}
-                        onChangeText={(text) => setForm({ ...form, phone_number: text })}
-                    />
-                    <Button title="Guardar" onPress={handleSaveEmployee} />
-                    <Button title="Cancelar" onPress={() => setModalVisible(false)} color="red" />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Rol"
+                            value={form.role}
+                            onChangeText={(text) => setForm({ ...form, role: text })}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Número de Teléfono"
+                            value={form.phone_number}
+                            onChangeText={(text) => setForm({ ...form, phone_number: text })}
+                            keyboardType="phone-pad"
+                        />
+
+                        {error && <Text style={styles.errorText}>{error}</Text>}
+
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
+                                <Text style={styles.buttonText}>Cancelar</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleSaveEmployee} style={styles.saveButton}>
+                                <Text style={styles.buttonText}>{isEditing ? 'Actualizar' : 'Guardar'}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                 </ScrollView>
             </Modal>
             <EmployeeDetailsModal />

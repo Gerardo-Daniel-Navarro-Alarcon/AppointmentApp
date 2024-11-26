@@ -71,21 +71,55 @@ const HomeScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flexGrow: 1,
+    background: {
+        flex: 1,
+        resizeMode: 'cover',
+        justifyContent: 'center',
+    },
+    overlay: {
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        margin: 20,
         padding: 20,
-        backgroundColor: '#f5f5f5',
+        borderRadius: 10,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#fff',
+        textAlign: 'center',
+        marginBottom: 20,
+    },
+    container: {
+        flex: 1,
+        width: '100%',
+        paddingHorizontal: 20,
+    },
+    buttonContainer: {
+        backgroundColor: '#4CAF50',
+        paddingVertical: 15,
+        borderRadius: 8,
         alignItems: 'center',
+        marginTop: 20,
+        width: '80%',
+        alignSelf: 'center',
+    },
+    logoutText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    contentContainer: {
+        marginTop: 20,
+        alignItems: 'center',
+    },
+    text: {
+        color: '#fff',
+        fontSize: 16,
+        marginVertical: 5,
     },
     header: {
         marginBottom: 30,
         alignItems: 'center',
-    },
-    title: {
-        fontSize: 26,
-        fontWeight: 'bold',
-        color: '#333',
-        textAlign: 'center',
     },
     subtitle: {
         fontSize: 18,
@@ -135,12 +169,6 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         width: '80%',
         marginTop: 20,
-    },
-    logoutText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginLeft: 8,
     },
 });
 
