@@ -352,11 +352,6 @@ const AppointmentsScreen = () => {
 
     return (
         <View style={styles.container}>
-            {/* Botón para añadir cita */}
-            <TouchableOpacity onPress={() => handleOpenModal()} style={styles.addButton}>
-                <FontAwesome name="plus" size={24} color="#fff" />
-            </TouchableOpacity>
-
             {/* Lista de citas */}
             {loading ? (
                 <ActivityIndicator size="large" color="#0000ff" />
@@ -369,10 +364,13 @@ const AppointmentsScreen = () => {
                 />
             )}
 
-            {/* Modal de añadir/editar */}
-            {renderModal()}
+            {/* Botón para añadir cita */}
+            <TouchableOpacity onPress={() => handleOpenModal()} style={styles.addButton}>
+                <FontAwesome name="plus" size={24} color="#fff" />
+            </TouchableOpacity>
 
-            {/* Modal de detalles */}
+            {/* Modales */}
+            {renderModal()}
             {detailsModalVisible && <AppointmentDetailsModal />}
         </View>
     );

@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, ActivityIndicator, Modal, TextInput, Button, ScrollView } from 'react-native';
+import {
+    View,
+    Text,
+    FlatList,
+    StyleSheet,
+    Alert,
+    TouchableOpacity,
+    ActivityIndicator,
+    Modal,
+    TextInput,
+    ScrollView
+} from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { API_BASE_URL } from '@env';
 
-const EmployeesScreen = () => {
+const EmployeesScreen = ({ navigation }) => {
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -45,7 +56,6 @@ const EmployeesScreen = () => {
             const response = await axios.get(`${API_BASE_URL}/employees.json`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            console.log(response.data); // Verifica que es una matriz
             setEmployees(response.data);
         } catch (error) {
             setError('Error al cargar empleados');
@@ -68,9 +78,17 @@ const EmployeesScreen = () => {
             });
         } else {
             setIsEditing(false);
-            setForm({ first_name: '', last_name: '', email: '', password: '', role: '', phone_number: '' });
+            setForm({
+                first_name: '',
+                last_name: '',
+                email: '',
+                password: '',
+                role: '',
+                phone_number: ''
+            });
         }
         setModalVisible(true);
+        setError(null); // Reiniciar errores al abrir el modal
     };
 
     // Función para guardar empleado
@@ -145,7 +163,7 @@ const EmployeesScreen = () => {
             minute: '2-digit'
         });
     };
-    
+
     const renderEmployee = ({ item }) => (
         <View style={styles.employeeContainer}>
             <View style={styles.employeeInfo}>
@@ -185,7 +203,7 @@ const EmployeesScreen = () => {
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
                     <Text style={styles.modalTitle}>Detalles del Empleado</Text>
-                    
+
                     {selectedEmployee && (
                         <View style={styles.detailsContainer}>
                             <View style={styles.detailRow}>
@@ -195,7 +213,6 @@ const EmployeesScreen = () => {
                                     <Text style={styles.detailValue}>
                                         {`${selectedEmployee.first_name} ${selectedEmployee.last_name}`}
                                     </Text>
-                                    
                                 </View>
                             </View>
 
@@ -246,7 +263,7 @@ const EmployeesScreen = () => {
                         </View>
                     )}
 
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.closeButton}
                         onPress={() => setDetailsModalVisible(false)}
                     >
@@ -257,11 +274,17 @@ const EmployeesScreen = () => {
         </Modal>
     );
 
+    const handleCreateEmployee = () => {
+        // Implementa la lógica para crear un nuevo empleado
+        // Por ejemplo, navegar a una pantalla de creación de empleado
+        navigation.navigate('CreateEmployeeScreen');
+    };
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Lista de Empleados</Text>
             <TouchableOpacity onPress={() => handleOpenModal()} style={styles.addButton}>
-                <Text style={styles.addButtonText}>+ Añadir Empleado</Text>
+                <FontAwesome name="plus" size={24} color="#fff" />
             </TouchableOpacity>
             {loading ? (
                 <ActivityIndicator size="large" color="#007bff" style={styles.loading} />
@@ -273,65 +296,76 @@ const EmployeesScreen = () => {
                     contentContainerStyle={styles.listContainer}
                 />
             )}
-            <Modal visible={modalVisible} animationType="slide">
-                <ScrollView contentContainerStyle={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>{isEditing ? 'Editar Empleado' : 'Nuevo Empleado'}</Text>
-                        
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Nombre"
-                            value={form.first_name}
-                            onChangeText={(text) => setForm({ ...form, first_name: text })}
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Apellido"
-                            value={form.last_name}
-                            onChangeText={(text) => setForm({ ...form, last_name: text })}
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Correo Electrónico"
-                            value={form.email}
-                            onChangeText={(text) => setForm({ ...form, email: text })}
-                            keyboardType="email-address"
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Contraseña"
-                            value={form.password}
-                            onChangeText={(text) => setForm({ ...form, password: text })}
-                            secureTextEntry
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Rol"
-                            value={form.role}
-                            onChangeText={(text) => setForm({ ...form, role: text })}
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Número de Teléfono"
-                            value={form.phone_number}
-                            onChangeText={(text) => setForm({ ...form, phone_number: text })}
-                            keyboardType="phone-pad"
-                        />
+            {/* Modal de Crear/Editar */}
+            <Modal
+                visible={modalVisible}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <ScrollView contentContainerStyle={styles.modalContainer}>
+                        <View style={styles.modalContent}>
+                            <Text style={styles.modalTitle}>{isEditing ? 'Editar Empleado' : 'Nuevo Empleado'}</Text>
 
-                        {error && <Text style={styles.errorText}>{error}</Text>}
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Nombre"
+                                value={form.first_name}
+                                onChangeText={(text) => setForm({ ...form, first_name: text })}
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Apellido"
+                                value={form.last_name}
+                                onChangeText={(text) => setForm({ ...form, last_name: text })}
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Correo Electrónico"
+                                value={form.email}
+                                onChangeText={(text) => setForm({ ...form, email: text })}
+                                keyboardType="email-address"
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Contraseña"
+                                value={form.password}
+                                onChangeText={(text) => setForm({ ...form, password: text })}
+                                secureTextEntry
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Rol"
+                                value={form.role}
+                                onChangeText={(text) => setForm({ ...form, role: text })}
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Número de Teléfono"
+                                value={form.phone_number}
+                                onChangeText={(text) => setForm({ ...form, phone_number: text })}
+                                keyboardType="phone-pad"
+                            />
 
-                        <View style={styles.buttonContainer}>
-                            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
-                                <Text style={styles.buttonText}>Cancelar</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleSaveEmployee} style={styles.saveButton}>
-                                <Text style={styles.buttonText}>{isEditing ? 'Actualizar' : 'Guardar'}</Text>
-                            </TouchableOpacity>
+                            {error && <Text style={styles.errorText}>{error}</Text>}
+
+                            <View style={styles.buttonContainer}>
+                                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
+                                    <Text style={styles.buttonText}>Cancelar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={handleSaveEmployee} style={styles.saveButton}>
+                                    <Text style={styles.buttonText}>{isEditing ? 'Actualizar' : 'Guardar'}</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                    </View>
-                </ScrollView>
+                    </ScrollView>
+                </View>
             </Modal>
             <EmployeeDetailsModal />
+            <TouchableOpacity style={styles.button} onPress={handleCreateEmployee}>
+                <Text style={styles.buttonText}>Crear Nuevo Empleado</Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -363,7 +397,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     icon: {
-        color: '#ff6b6b',
         marginRight: 10,
     },
     employeeTextContainer: {
@@ -410,16 +443,31 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.5,
         shadowRadius: 20,
     },
-    modalContainer: {
+    addButtonText: {
+        color: '#fff',
+        fontSize: 16,
+    },
+    modalOverlay: {
+        flex: 1,
         backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'center',
         padding: 20,
+    },
+    modalContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
+    },
+    modalContent: {
+        backgroundColor: 'rgba(0,0,0,0.8)',
         borderRadius: 30,
+        padding: 20,
     },
     modalTitle: {
         fontSize: 22,
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: 20,
+        color: '#fff',
     },
     input: {
         height: 40,
@@ -428,6 +476,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         paddingHorizontal: 10,
         marginBottom: 10,
+        backgroundColor: '#fff',
     },
     loading: {
         marginTop: 20,
@@ -465,51 +514,43 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 20,
     },
-    button: {
-        backgroundColor: '#ff6b6b',
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    cancelButton: {
+        backgroundColor: '#F44336',
         paddingVertical: 15,
         borderRadius: 30,
         alignItems: 'center',
-        marginTop: 20,
-        shadowColor: '#ff6b6b',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.5,
-        shadowRadius: 20,
+        flex: 1,
+        marginRight: 10,
+    },
+    saveButton: {
+        backgroundColor: '#4CAF50',
+        paddingVertical: 15,
+        borderRadius: 30,
+        alignItems: 'center',
+        flex: 1,
+        marginLeft: 10,
     },
     buttonText: {
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
     },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        justifyContent: 'center',
-        padding: 20,
+    errorText: {
+        color: '#F44336',
+        textAlign: 'center',
+        marginBottom: 10,
     },
-    modalContent: {
-        backgroundColor: 'rgba(0,0,0,0.8)',
-        borderRadius: 30,
-        padding: 20,
-    },
-    inputContainer: {
-        flexDirection: 'row',
+    button: {
+        backgroundColor: '#2196F3',
+        padding: 15,
+        borderRadius: 5,
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        borderRadius: 30,
-        paddingHorizontal: 20,
-        marginBottom: 15,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    loadingText: {
-        color: '#fff',
-        fontSize: 16,
         marginTop: 10,
-    }
+    },
 });
 
 export default EmployeesScreen;

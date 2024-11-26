@@ -379,11 +379,6 @@ const ProductsScreen = () => {
 
     return (
         <View style={styles.container}>
-            {/* Botón para añadir producto */}
-            <TouchableOpacity onPress={() => handleOpenModal()} style={styles.addButton}>
-                <FontAwesome name="plus" size={24} color="#fff" />
-            </TouchableOpacity>
-
             {/* Lista de productos */}
             {loading ? (
                 <ActivityIndicator size="large" color="#0000ff" />
@@ -396,10 +391,13 @@ const ProductsScreen = () => {
                 />
             )}
 
-            {/* Modal de añadir/editar */}
-            {renderModal()}
+            {/* Botón para añadir producto */}
+            <TouchableOpacity onPress={() => handleOpenModal()} style={styles.addButton}>
+                <FontAwesome name="plus" size={24} color="#fff" />
+            </TouchableOpacity>
 
-            {/* Modal de detalles */}
+            {/* Modales */}
+            {renderModal()}
             {detailsModalVisible && <ProductDetailsModal />}
         </View>
     );

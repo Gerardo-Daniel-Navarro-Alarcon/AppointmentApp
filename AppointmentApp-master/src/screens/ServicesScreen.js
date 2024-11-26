@@ -357,11 +357,6 @@ const ServicesScreen = () => {
 
     return (
         <View style={styles.container}>
-            {/* Botón para añadir servicio */}
-            <TouchableOpacity onPress={() => handleOpenModal()} style={styles.addButton}>
-                <FontAwesome name="plus" size={24} color="#fff" />
-            </TouchableOpacity>
-
             {/* Lista de servicios */}
             {loading ? (
                 <ActivityIndicator size="large" color="#0000ff" />
@@ -373,6 +368,11 @@ const ServicesScreen = () => {
                     contentContainerStyle={styles.listContainer}
                 />
             )}
+
+            {/* Botón para añadir servicio */}
+            <TouchableOpacity onPress={() => handleOpenModal()} style={styles.addButton}>
+                <FontAwesome name="plus" size={24} color="#fff" />
+            </TouchableOpacity>
 
             {/* Modal de añadir/editar */}
             {renderModal()}
