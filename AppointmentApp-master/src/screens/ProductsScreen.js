@@ -8,7 +8,8 @@ import {
     ActivityIndicator,
     Modal,
     TextInput,
-    ScrollView
+    ScrollView,
+    Alert,
 } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
@@ -17,13 +18,12 @@ import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 
 const ProductsScreen = () => {
     const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [detailsModalVisible, setDetailsModalVisible] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
-    const [currentProduct, setCurrentProduct] = useState({});
     const [form, setForm] = useState({
         name: '',
         description: '',
@@ -31,13 +31,15 @@ const ProductsScreen = () => {
         stock: '',
         category_id: '',
         low_stock_threshold: '',
-        active: true
+        active: true,
+        created_at: '',
+        updated_at: '',
     });
 
     // Validar formulario
     const validateForm = () => {
         if (!form.name || !form.price || !form.stock || !form.category_id) {
-            setError('Por favor complete los campos requeridos: nombre, precio, stock y categoría');
+            setError('Por favor, completa los campos requeridos.');
             return false;
         }
         if (isNaN(form.price) || parseFloat(form.price) <= 0) {
@@ -63,10 +65,8 @@ const ProductsScreen = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setProducts(response.data);
-            setError(null);
         } catch (error) {
-            console.error('Error fetching products:', error);
-            setError('Error al cargar los productos');
+            setError('Error al cargar productos');
         } finally {
             setLoading(false);
         }
@@ -75,7 +75,6 @@ const ProductsScreen = () => {
     const handleOpenModal = (product = null) => {
         if (product) {
             setIsEditing(true);
-            setCurrentProduct(product);
             setForm({
                 name: product.name || '',
                 description: product.description || '',
@@ -83,8 +82,11 @@ const ProductsScreen = () => {
                 stock: product.stock?.toString() || '',
                 category_id: product.category_id?.toString() || '',
                 low_stock_threshold: product.low_stock_threshold?.toString() || '',
-                active: product.active
+                active: product.active,
+                created_at: product.created_at,
+                updated_at: product.updated_at,
             });
+            setSelectedProduct(product);
         } else {
             setIsEditing(false);
             setForm({
@@ -94,10 +96,17 @@ const ProductsScreen = () => {
                 stock: '',
                 category_id: '',
                 low_stock_threshold: '',
-                active: true
+                active: true,
+                created_at: '',
+                updated_at: '',
             });
         }
         setModalVisible(true);
+        setError(null);
+    };
+
+    const handleCloseModal = () => {
+        setModalVisible(false);
         setError(null);
     };
 
@@ -105,18 +114,19 @@ const ProductsScreen = () => {
         if (!validateForm()) return;
 
         setLoading(true);
+        setError(null);
+
         try {
             const token = await SecureStore.getItemAsync('authToken');
-            const method = isEditing ? 'PUT' : 'POST';
             const url = isEditing
                 ? `${API_BASE_URL}/products/${selectedProduct.id}.json`
                 : `${API_BASE_URL}/products.json`;
-
+            const method = isEditing ? 'put' : 'post';
             const response = await axios({
-                method,
-                url,
+                method: method,
+                url: url,
+                data: form,
                 headers: { Authorization: `Bearer ${token}` },
-                data: form
             });
 
             if (isEditing) {
@@ -125,32 +135,38 @@ const ProductsScreen = () => {
                 setProducts([...products, response.data]);
             }
 
-            setModalVisible(false);
-            setForm({
-                name: '',
-                description: '',
-                price: '',
-                stock: '',
-                created_at: '',
-                updated_at: '',
-            });
+            handleCloseModal();
         } catch (err) {
-            setError('Error al guardar producto');
+            setError('Error al guardar el producto.');
         } finally {
             setLoading(false);
         }
     };
 
     const handleDeleteProduct = async (productId) => {
-        try {
-            const token = await SecureStore.getItemAsync('authToken');
-            await axios.delete(`${API_BASE_URL}/products/${productId}.json`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setProducts(products.filter(p => p.id !== productId));
-        } catch (err) {
-            setError('Error al eliminar producto');
-        }
+        Alert.alert(
+            "Confirmación",
+            "¿Estás seguro de que deseas eliminar este producto?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Eliminar",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            const token = await SecureStore.getItemAsync('authToken');
+                            await axios.delete(`${API_BASE_URL}/products/${productId}.json`, {
+                                headers: { Authorization: `Bearer ${token}` }
+                            });
+                            setProducts(products.filter(p => p.id !== productId));
+                            Alert.alert("Éxito", "Producto eliminado correctamente");
+                        } catch (err) {
+                            Alert.alert("Error", "No se pudo eliminar el producto");
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     const handleShowDetails = (product) => {
@@ -159,8 +175,15 @@ const ProductsScreen = () => {
     };
 
     const formatDate = (dateString) => {
+        if (!dateString) return 'No disponible';
         const date = new Date(dateString);
-        return date.toLocaleDateString();
+        return date.toLocaleString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
     const renderProduct = ({ item }) => (
@@ -170,6 +193,7 @@ const ProductsScreen = () => {
                 <View style={styles.productTextContainer}>
                     <Text style={styles.productName}>{item.name}</Text>
                     <Text style={styles.productDetails}>Precio: ${item.price}</Text>
+                    <Text style={styles.productDetails}>Stock: {item.stock}</Text>
                 </View>
             </View>
             <View style={styles.actionsContainer}>
@@ -236,6 +260,22 @@ const ProductsScreen = () => {
                             </View>
 
                             <View style={styles.detailRow}>
+                                <MaterialIcons name="category" size={24} color="#fff" />
+                                <View style={styles.detailInfo}>
+                                    <Text style={styles.detailLabel}>Categoría ID</Text>
+                                    <Text style={styles.detailValue}>{selectedProduct.category_id}</Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.detailRow}>
+                                <MaterialIcons name="low-priority" size={24} color="#fff" />
+                                <View style={styles.detailInfo}>
+                                    <Text style={styles.detailLabel}>Umbral Bajo de Stock</Text>
+                                    <Text style={styles.detailValue}>{selectedProduct.low_stock_threshold}</Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.detailRow}>
                                 <MaterialIcons name="access-time" size={24} color="#fff" />
                                 <View style={styles.detailInfo}>
                                     <Text style={styles.detailLabel}>Creado</Text>
@@ -261,83 +301,105 @@ const ProductsScreen = () => {
         </Modal>
     );
 
+    // Renderizar el modal de añadir/editar
+    const renderModal = () => (
+        <Modal
+            visible={modalVisible}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={handleCloseModal}
+        >
+            <View style={styles.modalOverlay}>
+                <View style={styles.modalContent}>
+                    <Text style={styles.modalTitle}>{isEditing ? 'Editar Producto' : 'Nuevo Producto'}</Text>
+
+                    <ScrollView>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nombre"
+                            value={form.name}
+                            onChangeText={(text) => setForm({ ...form, name: text })}
+                        />
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Descripción"
+                            value={form.description}
+                            onChangeText={(text) => setForm({ ...form, description: text })}
+                            multiline
+                        />
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Precio"
+                            value={form.price}
+                            onChangeText={(text) => setForm({ ...form, price: text })}
+                            keyboardType="numeric"
+                        />
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Stock"
+                            value={form.stock}
+                            onChangeText={(text) => setForm({ ...form, stock: text })}
+                            keyboardType="numeric"
+                        />
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Categoría ID"
+                            value={form.category_id}
+                            onChangeText={(text) => setForm({ ...form, category_id: text })}
+                            keyboardType="numeric"
+                        />
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Umbral Bajo de Stock"
+                            value={form.low_stock_threshold}
+                            onChangeText={(text) => setForm({ ...form, low_stock_threshold: text })}
+                            keyboardType="numeric"
+                        />
+
+                        {error && <Text style={styles.errorText}>{error}</Text>}
+
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity onPress={handleCloseModal} style={styles.cancelButton}>
+                                <Text style={styles.buttonText}>Cancelar</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleSaveProduct} style={styles.saveButton}>
+                                <Text style={styles.buttonText}>{isEditing ? 'Actualizar' : 'Guardar'}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
+                </View>
+            </View>
+        </Modal>
+    );
+
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Lista de Productos</Text>
+            {/* Botón para añadir producto */}
             <TouchableOpacity onPress={() => handleOpenModal()} style={styles.addButton}>
-                <Text style={styles.addButtonText}>+ Añadir Producto</Text>
+                <FontAwesome name="plus" size={24} color="#fff" />
             </TouchableOpacity>
+
+            {/* Lista de productos */}
             {loading ? (
-                <ActivityIndicator size="large" color="#007bff" style={styles.loading} />
+                <ActivityIndicator size="large" color="#0000ff" />
             ) : (
                 <FlatList
                     data={products}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={renderProduct}
+                    contentContainerStyle={styles.listContainer}
                 />
             )}
 
-            {/* Modal de Crear/Editar */}
-            <Modal visible={modalVisible} animationType="slide">
-                <ScrollView contentContainerStyle={styles.modalContainer}>
-                    <Text style={styles.modalTitle}>
-                        {isEditing ? 'Editar Producto' : 'Nuevo Producto'}
-                    </Text>
+            {/* Modal de añadir/editar */}
+            {renderModal()}
 
-                    {error && <Text style={styles.errorText}>{error}</Text>}
-
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Nombre"
-                        value={form.name}
-                        onChangeText={(text) => setForm({ ...form, name: text })}
-                    />
-
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Descripción"
-                        value={form.description}
-                        onChangeText={(text) => setForm({ ...form, description: text })}
-                    />
-
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Precio"
-                        value={form.price}
-                        keyboardType="numeric"
-                        onChangeText={(text) => setForm({ ...form, price: text })}
-                    />
-
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Stock"
-                        value={form.stock}
-                        keyboardType="numeric"
-                        onChangeText={(text) => setForm({ ...form, stock: text })}
-                    />
-
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity
-                            style={styles.cancelButton}
-                            onPress={() => setModalVisible(false)}
-                        >
-                            <Text style={styles.buttonText}>Cancelar</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={styles.saveButton}
-                            onPress={handleSaveProduct}
-                            disabled={loading}
-                        >
-                            <Text style={styles.buttonText}>
-                                {loading ? 'Guardando...' : 'Guardar'}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
-            </Modal>
-
-            {/* Modal de Detalles */}
+            {/* Modal de detalles */}
             {detailsModalVisible && <ProductDetailsModal />}
         </View>
     );
@@ -348,13 +410,6 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 20,
         backgroundColor: '#000',
-    },
-    title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#fff',
-        textAlign: 'center',
-        marginBottom: 40,
     },
     listContainer: {
         paddingBottom: 20,
@@ -404,7 +459,8 @@ const styles = StyleSheet.create({
     },
     addButton: {
         backgroundColor: '#ff6b6b',
-        padding: 15,
+        width: 60,
+        height: 60,
         borderRadius: 30,
         justifyContent: 'center',
         alignItems: 'center',
@@ -416,17 +472,16 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.5,
         shadowRadius: 20,
     },
-    addButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    modalContainer: {
+    modalOverlay: {
+        flex: 1,
         backgroundColor: 'rgba(0,0,0,0.6)',
-        padding: 20,
-        borderRadius: 30,
-        flexGrow: 1,
         justifyContent: 'center',
+        padding: 20,
+    },
+    modalContent: {
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        borderRadius: 30,
+        padding: 20,
     },
     modalTitle: {
         fontSize: 22,
@@ -444,8 +499,35 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         backgroundColor: '#fff',
     },
-    loading: {
-        marginTop: 20,
+    errorText: {
+        color: '#F44336',
+        textAlign: 'center',
+        marginBottom: 10,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    cancelButton: {
+        backgroundColor: '#F44336',
+        paddingVertical: 15,
+        borderRadius: 30,
+        alignItems: 'center',
+        flex: 1,
+        marginRight: 10,
+    },
+    saveButton: {
+        backgroundColor: '#4CAF50',
+        paddingVertical: 15,
+        borderRadius: 30,
+        alignItems: 'center',
+        flex: 1,
+        marginLeft: 10,
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
     detailsContainer: {
         marginVertical: 20,
@@ -479,76 +561,6 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         alignItems: 'center',
         marginTop: 20,
-    },
-    button: {
-        backgroundColor: '#ff6b6b',
-        paddingVertical: 15,
-        borderRadius: 30,
-        alignItems: 'center',
-        marginTop: 20,
-        shadowColor: '#ff6b6b',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.5,
-        shadowRadius: 20,
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        justifyContent: 'center',
-        padding: 20,
-    },
-    modalContent: {
-        backgroundColor: 'rgba(0,0,0,0.8)',
-        borderRadius: 30,
-        padding: 20,
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        borderRadius: 30,
-        paddingHorizontal: 20,
-        marginBottom: 15,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    loadingText: {
-        color: '#fff',
-        fontSize: 16,
-        marginTop: 10,
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    cancelButton: {
-        backgroundColor: '#F44336',
-        paddingVertical: 15,
-        borderRadius: 30,
-        alignItems: 'center',
-        flex: 1,
-        marginRight: 10,
-    },
-    saveButton: {
-        backgroundColor: '#4CAF50',
-        paddingVertical: 15,
-        borderRadius: 30,
-        alignItems: 'center',
-        flex: 1,
-        marginLeft: 10,
-    },
-    errorText: {
-        color: '#F44336',
-        textAlign: 'center',
-        marginBottom: 10,
     },
 });
 

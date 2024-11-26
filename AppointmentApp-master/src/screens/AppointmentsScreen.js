@@ -8,7 +8,8 @@ import {
     ActivityIndicator,
     Modal,
     TextInput,
-    ScrollView
+    ScrollView,
+    Alert,
 } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
@@ -18,7 +19,7 @@ import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 const AppointmentsScreen = () => {
     const [appointments, setAppointments] = useState([]);
     const [services, setServices] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -49,6 +50,7 @@ const AppointmentsScreen = () => {
     }, []);
 
     const fetchAppointments = async () => {
+        setLoading(true);
         try {
             const token = await SecureStore.getItemAsync('authToken');
             const response = await axios.get(`${API_BASE_URL}/appointments.json`, {
@@ -70,7 +72,7 @@ const AppointmentsScreen = () => {
             });
             setServices(response.data);
         } catch (error) {
-            console.error('Error fetching services:', error);
+            console.error('Error al cargar servicios:', error);
         }
     };
 
@@ -103,6 +105,11 @@ const AppointmentsScreen = () => {
         setError(null);
     };
 
+    const handleCloseModal = () => {
+        setModalVisible(false);
+        setError(null);
+    };
+
     const handleSaveAppointment = async () => {
         if (!validateForm()) return;
 
@@ -111,37 +118,51 @@ const AppointmentsScreen = () => {
 
         try {
             const token = await SecureStore.getItemAsync('authToken');
-            const response = await axios.post(`${API_BASE_URL}/appointments.json`, form, {
+            const url = isEditing ? `${API_BASE_URL}/appointments/${selectedAppointment.id}.json` : `${API_BASE_URL}/appointments.json`;
+            const method = isEditing ? 'put' : 'post';
+            const response = await axios({
+                method: method,
+                url: url,
+                data: form,
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setAppointments([...appointments, response.data]);
-            setModalVisible(false);
-            setForm({
-                employee_id: '',
-                service_id: '',
-                appointment_date: '',
-                status: '',
-                notes: '',
-                created_at: '',
-                updated_at: '',
-            });
+            if (isEditing) {
+                setAppointments(appointments.map(app => app.id === selectedAppointment.id ? response.data : app));
+            } else {
+                setAppointments([...appointments, response.data]);
+            }
+            handleCloseModal();
         } catch (err) {
-            setError('Error al crear la cita.');
+            setError('Error al guardar la cita.');
         } finally {
             setLoading(false);
         }
     };
 
     const handleDeleteAppointment = async (appointmentId) => {
-        try {
-            const token = await SecureStore.getItemAsync('authToken');
-            await axios.delete(`${API_BASE_URL}/appointments/${appointmentId}.json`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setAppointments(appointments.filter(a => a.id !== appointmentId));
-        } catch (err) {
-            setError('Error al eliminar cita');
-        }
+        Alert.alert(
+            "Confirmación",
+            "¿Estás seguro de que deseas eliminar esta cita?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Eliminar",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            const token = await SecureStore.getItemAsync('authToken');
+                            await axios.delete(`${API_BASE_URL}/appointments/${appointmentId}.json`, {
+                                headers: { Authorization: `Bearer ${token}` }
+                            });
+                            setAppointments(appointments.filter(a => a.id !== appointmentId));
+                            Alert.alert("Éxito", "Cita eliminada correctamente");
+                        } catch (err) {
+                            Alert.alert("Error", "No se pudo eliminar la cita");
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     const handleShowDetails = (appointment) => {
@@ -150,8 +171,15 @@ const AppointmentsScreen = () => {
     };
 
     const formatDate = (dateString) => {
+        if (!dateString) return 'No disponible';
         const date = new Date(dateString);
-        return date.toLocaleDateString();
+        return date.toLocaleString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
     const renderAppointment = ({ item }) => (
@@ -184,48 +212,139 @@ const AppointmentsScreen = () => {
     // Modal de Detalles
     const AppointmentDetailsModal = () => (
         <Modal
+            visible={detailsModalVisible}
             animationType="slide"
             transparent={true}
-            visible={detailsModalVisible}
             onRequestClose={() => setDetailsModalVisible(false)}
         >
-            <View style={styles.centeredView}>
-                <View style={styles.modalView}>
+            <View style={styles.modalOverlay}>
+                <View style={styles.modalContent}>
                     <Text style={styles.modalTitle}>Detalles de la Cita</Text>
                     {selectedAppointment && (
-                        <>
-                            <Text style={styles.modalText}>
-                                <Text style={styles.boldText}>Fecha: </Text>
-                                {new Date(selectedAppointment.date).toLocaleDateString()}
-                            </Text>
-                            <Text style={styles.modalText}>
-                                <Text style={styles.boldText}>Hora: </Text>
-                                {new Date(selectedAppointment.date).toLocaleTimeString()}
-                            </Text>
-                            <Text style={styles.modalText}>
-                                <Text style={styles.boldText}>Servicio: </Text>
-                                {services.find(s => s.id === selectedAppointment.service_id)?.name || 'N/A'}
-                            </Text>
-                            <Text style={styles.modalText}>
-                                <Text style={styles.boldText}>Duración: </Text>
-                                {services.find(s => s.id === selectedAppointment.service_id)?.duration || 'N/A'} minutos
-                            </Text>
-                            <Text style={styles.modalText}>
-                                <Text style={styles.boldText}>Precio: </Text>
-                                ${services.find(s => s.id === selectedAppointment.service_id)?.price || 'N/A'}
-                            </Text>
-                            <Text style={styles.modalText}>
-                                <Text style={styles.boldText}>Estado: </Text>
-                                {selectedAppointment.status}
-                            </Text>
-                        </>
+                        <View style={styles.detailsContainer}>
+                            <View style={styles.detailRow}>
+                                <MaterialIcons name="person" size={24} color="#fff" />
+                                <View style={styles.detailInfo}>
+                                    <Text style={styles.detailLabel}>Empleado ID</Text>
+                                    <Text style={styles.detailValue}>{selectedAppointment.employee_id}</Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.detailRow}>
+                                <MaterialIcons name="build" size={24} color="#fff" />
+                                <View style={styles.detailInfo}>
+                                    <Text style={styles.detailLabel}>Servicio ID</Text>
+                                    <Text style={styles.detailValue}>{selectedAppointment.service_id}</Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.detailRow}>
+                                <MaterialIcons name="access-time" size={24} color="#fff" />
+                                <View style={styles.detailInfo}>
+                                    <Text style={styles.detailLabel}>Fecha y Hora</Text>
+                                    <Text style={styles.detailValue}>{formatDate(selectedAppointment.appointment_date)}</Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.detailRow}>
+                                <MaterialIcons name="info" size={24} color="#fff" />
+                                <View style={styles.detailInfo}>
+                                    <Text style={styles.detailLabel}>Estado</Text>
+                                    <Text style={styles.detailValue}>{selectedAppointment.status}</Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.detailRow}>
+                                <MaterialIcons name="note" size={24} color="#fff" />
+                                <View style={styles.detailInfo}>
+                                    <Text style={styles.detailLabel}>Notas</Text>
+                                    <Text style={styles.detailValue}>{selectedAppointment.notes || 'Sin notas'}</Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.detailRow}>
+                                <MaterialIcons name="date-range" size={24} color="#fff" />
+                                <View style={styles.detailInfo}>
+                                    <Text style={styles.detailLabel}>Creado</Text>
+                                    <Text style={styles.detailValue}>{formatDate(selectedAppointment.created_at)}</Text>
+                                </View>
+                                <MaterialIcons name="update" size={24} color="#fff" />
+                                <View style={styles.detailInfo}>
+                                    <Text style={styles.detailLabel}>Actualizado</Text>
+                                    <Text style={styles.detailValue}>{formatDate(selectedAppointment.updated_at)}</Text>
+                                </View>
+                            </View>
+                        </View>
                     )}
                     <TouchableOpacity
                         style={styles.closeButton}
                         onPress={() => setDetailsModalVisible(false)}
                     >
-                        <Text style={styles.textStyle}>Cerrar</Text>
+                        <Text style={styles.buttonText}>Cerrar</Text>
                     </TouchableOpacity>
+                </View>
+            </View>
+        </Modal>
+    );
+
+    // Renderizar el modal de añadir/editar
+    const renderModal = () => (
+        <Modal
+            visible={modalVisible}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={handleCloseModal}
+        >
+            <View style={styles.modalOverlay}>
+                <View style={styles.modalContent}>
+                    <Text style={styles.modalTitle}>{isEditing ? 'Editar Cita' : 'Nueva Cita'}</Text>
+
+                    <ScrollView>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Empleado ID"
+                            value={form.employee_id}
+                            onChangeText={(text) => setForm({ ...form, employee_id: text })}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Servicio ID"
+                            value={form.service_id}
+                            onChangeText={(text) => setForm({ ...form, service_id: text })}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Fecha y Hora (YYYY-MM-DD HH:MM)"
+                            value={form.appointment_date}
+                            onChangeText={(text) => setForm({ ...form, appointment_date: text })}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Estado"
+                            value={form.status}
+                            onChangeText={(text) => setForm({ ...form, status: text })}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Notas"
+                            value={form.notes}
+                            onChangeText={(text) => setForm({ ...form, notes: text })}
+                            multiline
+                        />
+
+                        {error && <Text style={styles.errorText}>{error}</Text>}
+
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity onPress={handleCloseModal} style={styles.cancelButton}>
+                                <Text style={styles.buttonText}>Cancelar</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleSaveAppointment} style={styles.saveButton}>
+                                <Text style={styles.buttonText}>{isEditing ? 'Actualizar' : 'Guardar'}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
                 </View>
             </View>
         </Modal>
@@ -233,86 +352,27 @@ const AppointmentsScreen = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Lista de Citas</Text>
+            {/* Botón para añadir cita */}
             <TouchableOpacity onPress={() => handleOpenModal()} style={styles.addButton}>
-                <Text style={styles.addButtonText}>+ Añadir Cita</Text>
+                <FontAwesome name="plus" size={24} color="#fff" />
             </TouchableOpacity>
+
+            {/* Lista de citas */}
             {loading ? (
-                <ActivityIndicator size="large" color="#007bff" style={styles.loading} />
+                <ActivityIndicator size="large" color="#0000ff" />
             ) : (
                 <FlatList
                     data={appointments}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={renderAppointment}
+                    contentContainerStyle={styles.listContainer}
                 />
             )}
 
-            {/* Modal de Crear/Editar */}
-            <Modal visible={modalVisible} animationType="slide">
-                <ScrollView contentContainerStyle={styles.modalContainer}>
-                    <Text style={styles.modalTitle}>
-                        {isEditing ? 'Editar Cita' : 'Nueva Cita'}
-                    </Text>
+            {/* Modal de añadir/editar */}
+            {renderModal()}
 
-                    {error && <Text style={styles.errorText}>{error}</Text>}
-
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Nombre del Cliente"
-                        value={form.client_name}
-                        onChangeText={(text) => setForm({ ...form, client_name: text })}
-                    />
-
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Servicio"
-                        value={form.service}
-                        onChangeText={(text) => setForm({ ...form, service: text })}
-                    />
-
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Fecha (YYYY-MM-DD)"
-                        value={form.date}
-                        onChangeText={(text) => setForm({ ...form, date: text })}
-                    />
-
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Hora (HH:MM)"
-                        value={form.time}
-                        onChangeText={(text) => setForm({ ...form, time: text })}
-                    />
-
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Estado"
-                        value={form.status}
-                        onChangeText={(text) => setForm({ ...form, status: text })}
-                    />
-
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity
-                            style={styles.cancelButton}
-                            onPress={() => setModalVisible(false)}
-                        >
-                            <Text style={styles.buttonText}>Cancelar</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={styles.saveButton}
-                            onPress={handleSaveAppointment}
-                            disabled={loading}
-                        >
-                            <Text style={styles.buttonText}>
-                                {loading ? 'Guardando...' : 'Guardar'}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
-            </Modal>
-
-            {/* Modal de Detalles */}
+            {/* Modal de detalles */}
             {detailsModalVisible && <AppointmentDetailsModal />}
         </View>
     );
@@ -379,7 +439,8 @@ const styles = StyleSheet.create({
     },
     addButton: {
         backgroundColor: '#ff6b6b',
-        padding: 15,
+        width: 60,
+        height: 60,
         borderRadius: 30,
         justifyContent: 'center',
         alignItems: 'center',
@@ -394,14 +455,17 @@ const styles = StyleSheet.create({
     addButtonText: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: 'bold',
     },
-    modalContainer: {
+    modalOverlay: {
+        flex: 1,
         backgroundColor: 'rgba(0,0,0,0.6)',
-        padding: 20,
-        borderRadius: 30,
-        flexGrow: 1,
         justifyContent: 'center',
+        padding: 20,
+    },
+    modalContent: {
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        borderRadius: 30,
+        padding: 20,
     },
     modalTitle: {
         fontSize: 22,
@@ -419,8 +483,35 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         backgroundColor: '#fff',
     },
-    loading: {
-        marginTop: 20,
+    errorText: {
+        color: '#F44336',
+        textAlign: 'center',
+        marginBottom: 10,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    cancelButton: {
+        backgroundColor: '#F44336',
+        paddingVertical: 15,
+        borderRadius: 30,
+        alignItems: 'center',
+        flex: 1,
+        marginRight: 10,
+    },
+    saveButton: {
+        backgroundColor: '#4CAF50',
+        paddingVertical: 15,
+        borderRadius: 30,
+        alignItems: 'center',
+        flex: 1,
+        marginLeft: 10,
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
     detailsContainer: {
         marginVertical: 20,
@@ -455,89 +546,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 20,
     },
-    button: {
-        backgroundColor: '#ff6b6b',
-        paddingVertical: 15,
-        borderRadius: 30,
-        alignItems: 'center',
-        marginTop: 20,
-        shadowColor: '#ff6b6b',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.5,
-        shadowRadius: 20,
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        justifyContent: 'center',
-        padding: 20,
-    },
-    modalContent: {
-        backgroundColor: 'rgba(0,0,0,0.8)',
-        borderRadius: 30,
-        padding: 20,
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        borderRadius: 30,
-        paddingHorizontal: 20,
-        marginBottom: 15,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    loadingText: {
-        color: '#fff',
-        fontSize: 16,
-        marginTop: 10,
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    cancelButton: {
-        backgroundColor: '#F44336',
-        paddingVertical: 15,
-        borderRadius: 30,
-        alignItems: 'center',
-        flex: 1,
-        marginRight: 10,
-    },
-    saveButton: {
-        backgroundColor: '#4CAF50',
-        paddingVertical: 15,
-        borderRadius: 30,
-        alignItems: 'center',
-        flex: 1,
-        marginLeft: 10,
-    },
-    errorText: {
-        color: '#F44336',
-        textAlign: 'center',
-        marginBottom: 10,
-    },
-    boldText: {
-        fontWeight: 'bold'
-    },
-    modalText: {
-        marginBottom: 10,
-        textAlign: 'left',
-        fontSize: 16
-    },
-    modalTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 15
-    }
 });
 
 export default AppointmentsScreen;
