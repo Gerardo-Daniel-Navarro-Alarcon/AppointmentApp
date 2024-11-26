@@ -397,6 +397,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     icon: {
+        color: '#ff6b6b',
         marginRight: 10,
     },
     employeeTextContainer: {

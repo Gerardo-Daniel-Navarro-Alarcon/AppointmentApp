@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ScrollView } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { API_BASE_URL } from '@env';
 import axios from 'axios';
@@ -35,6 +35,7 @@ const LoginScreen = ({ navigation }) => {
     };
 
     return (
+        <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.overlay}>
                 <Text style={styles.title}>Iniciar Sesión</Text>
 
@@ -90,27 +91,27 @@ const LoginScreen = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
             </View>
+        </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
-    background: {
+    container: {
         flex: 1,
-        resizeMode: 'cover',
-        justifyContent: 'center',
+        padding: 20,
+        backgroundColor: '#000',
     },
     overlay: {
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        margin: 20,
         padding: 20,
         borderRadius: 10,
     },
     title: {
-        fontSize: 28,
+        fontSize: 32,
         fontWeight: 'bold',
         color: '#fff',
         textAlign: 'center',
-        marginBottom: 20,
+        marginBottom: 30,
     },
     inputContainer: {
         flexDirection: 'row',
@@ -128,9 +129,9 @@ const styles = StyleSheet.create({
     button: {
         backgroundColor: '#4CAF50',
         paddingVertical: 15,
-        borderRadius: 8,
+        borderRadius: 30,
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: 20,
     },
     buttonText: {
         color: '#fff',

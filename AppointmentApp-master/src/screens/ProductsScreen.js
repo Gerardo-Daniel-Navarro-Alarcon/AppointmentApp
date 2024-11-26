@@ -189,7 +189,7 @@ const ProductsScreen = () => {
     const renderProduct = ({ item }) => (
         <View style={styles.productContainer}>
             <View style={styles.productInfo}>
-                <FontAwesome name="box" size={36} color="#007bff" style={styles.icon} />
+                <FontAwesome name="cube" size={36} color="#007bff" style={styles.icon} />
                 <View style={styles.productTextContainer}>
                     <Text style={styles.productName}>{item.name}</Text>
                     <Text style={styles.productDetails}>Precio: ${item.price}</Text>

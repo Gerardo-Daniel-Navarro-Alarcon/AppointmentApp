@@ -71,55 +71,22 @@ const HomeScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    background: {
-        flex: 1,
-        resizeMode: 'cover',
-        justifyContent: 'center',
-    },
-    overlay: {
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        margin: 20,
-        padding: 20,
-        borderRadius: 10,
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#fff',
-        textAlign: 'center',
-        marginBottom: 20,
-    },
     container: {
         flex: 1,
         width: '100%',
         paddingHorizontal: 20,
-    },
-    buttonContainer: {
-        backgroundColor: '#4CAF50',
-        paddingVertical: 15,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginTop: 20,
-        width: '80%',
-        alignSelf: 'center',
-    },
-    logoutText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    contentContainer: {
-        marginTop: 20,
-        alignItems: 'center',
-    },
-    text: {
-        color: '#fff',
-        fontSize: 16,
-        marginVertical: 5,
+        backgroundColor: '#000',
     },
     header: {
         marginBottom: 30,
         alignItems: 'center',
+    },
+    title: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#fff',
+        textAlign: 'center',
+        marginBottom: 20,
     },
     subtitle: {
         fontSize: 18,
@@ -147,17 +114,11 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     cardText: {
-        color: 'white',
+        color: '#fff',
         fontSize: 16,
         fontWeight: '600',
         marginTop: 8,
         textAlign: 'center',
-    },
-    info: {
-        fontSize: 16,
-        color: '#999',
-        textAlign: 'center',
-        marginVertical: 10,
     },
     logoutButton: {
         flexDirection: 'row',
@@ -166,9 +127,21 @@ const styles = StyleSheet.create({
         paddingVertical: 15,
         paddingHorizontal: 25,
         backgroundColor: '#d9534f',
-        borderRadius: 8,
+        borderRadius: 30,
         width: '80%',
         marginTop: 20,
+    },
+    logoutText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginLeft: 10,
+    },
+    info: {
+        fontSize: 16,
+        color: '#999',
+        textAlign: 'center',
+        marginVertical: 10,
     },
 });
 

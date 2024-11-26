@@ -12,8 +12,25 @@ import { StyleSheet } from 'react-native';
 const Stack = createStackNavigator();
 
 const AppNavigator = () => (
-    <NavigationContainer>
-        <Stack.Navigator initialRouteName="Login" >
+    <NavigationContainer >
+        <Stack.Navigator initialRouteName="Login" screenOptions={{
+            headerStyle: {
+                backgroundColor: '#2c3e50', // Color de fondo del header
+                height: 100, // Altura del header
+                elevation: 5, // Sombra en Android
+                shadowOpacity: 0.3, // Sombra en iOS
+            },
+            headerTintColor: '#ffffff', // Color del texto y botones del header
+            headerTitleStyle: {
+                fontWeight: 'bold',
+                fontSize: 20,
+            },
+            headerBackTitleVisible: false, // Oculta el título al retroceder en iOS
+            cardStyle: { backgroundColor: '#f5f6fa' }, // Color de fondo de la pantalla
+            headerTitleAlign: 'center', // Centra el título
+            // Animación de transición
+            animation: 'slide_from_right', // Opciones: slide_from_right, fade, none
+        }}>
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Employees" component={EmployeesScreen} />
